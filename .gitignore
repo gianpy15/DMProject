@@ -168,3 +168,4 @@ dataset/originals/
 **/.ipynb_checkpoints
 resources/data/*.csv
 resources/data/*.gz
+**/__pycache__
