@@ -168,4 +168,5 @@ dataset/originals/
 **/.ipynb_checkpoints
 resources/data/*.csv
 resources/data/*.gz
-**/__pycache__
+**/__pycache_
+.idea
