@@ -170,3 +170,5 @@ resources/data/*.csv
 resources/data/*.gz
 **/__pycache_
 .idea
+
+resources/dataset/
