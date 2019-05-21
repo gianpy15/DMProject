@@ -164,6 +164,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/linux,macos,windows,pycharm,visualstudiocode
-\.idea/
-
-dataset/
+dataset/originals/
+**/.ipynb_checkpoints
+resources/data/*.csv
+resources/data/*.gz
+**/__pycache_
+.idea
