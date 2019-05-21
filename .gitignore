@@ -170,3 +170,7 @@ resources/data/*.csv
 resources/data/*.gz
 **/__pycache_
 .idea
+.vscode
+src/utils/__pycache__
+src/preprocessing/__pycache__
+src/__pycache__
