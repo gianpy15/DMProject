@@ -4,10 +4,12 @@ import pandas as pd
 import os
 import src.utils.folder as folder
 
-def preprocess(km_influence_range=5):
+def preprocess(km_influence_before=5, km_influence_after=2):
     """ Preprocess the events dataframe for train and test:
     - KM_START and KM_END are set to be ordered so that KM_START is less than KM_END
-    - 
+    - if KM_START is equal to KM_END, a new column is created containing the original value and KM_START
+        is decreased by km_influence_before and KM_END is increased by km_influence_after to create a valid
+        range
     """
     for mode in ['train','test']:
         filename = 'events_{}.csv.gz'
@@ -25,8 +27,8 @@ def preprocess(km_influence_range=5):
         events_df.loc[mask_km_start_equal_km_end, 'KM_EVENT'] = events_df.loc[mask_km_start_equal_km_end, 'KM_START']
 
         # modifiy KM_START and KM_END to be in the range of 5km
-        events_df.loc[mask_km_start_equal_km_end, 'KM_START'] -= km_influence_range
-        events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_range
+        events_df.loc[mask_km_start_equal_km_end, 'KM_START'] -= km_influence_before
+        events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_after
 
         # save the df
         preprocessing_folder = 'dataset/preprocessed'
