@@ -2,9 +2,12 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from time import time
+import os
+import src.preprocessing.create_base_structure as create_base_structure
 
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
+_BASE_PATH_PREPROCESSED = 'resources/dataset/preprocessed'
 
 # initialize variable for caching
 _distances_df = None
@@ -12,6 +15,22 @@ _sensors_df = None
 _events_df = {'train': None, 'test': None}
 _speeds_df = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
+_base_structure_df = None
+
+def base_structure():
+    start_t = time()
+    global _base_structure_df
+    base_structure_path = f'{_BASE_PATH_PREPROCESSED}/base_structure.csv'
+    if _base_structure_df is None:
+        if not os.path.isfile(base_structure_path):
+            print('base structure not found... creating it...')
+            create_base_structure.create_base_structure()
+        if _base_structure_df is None:
+            print('caching base structure\n')
+            _base_structure_df = pd.read_csv(base_structure_path)
+    print(f'base structure loaded in: {round(time() - start_t, 4)} s\n')
+    print('shape of the dataframe is: {}'.format(_base_structure_df.shape))
+    return _base_structure_df
 
 def events_train():
     start_t = time()
@@ -78,7 +97,7 @@ def sensors():
     return _sensors_df
 
 if __name__ == '__main__':
-    a = speeds_train()
+    a = base_structure()
 
 
 
