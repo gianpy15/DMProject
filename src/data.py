@@ -3,7 +3,6 @@ import numpy as np
 from tqdm import tqdm
 from time import time
 import os
-import src.preprocessing.create_base_structure as create_base_structure
 
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
@@ -18,6 +17,8 @@ _weather_df = {'train': None, 'test': None}
 _base_structure_df = None
 
 def base_structure():
+    import src.preprocessing.create_base_structure as create_base_structure
+    
     start_t = time()
     global _base_structure_df
     base_structure_path = f'{_BASE_PATH_PREPROCESSED}/base_structure.csv'
