@@ -178,3 +178,5 @@ resources/data/*.gz
 .idea
 
 resources/dataset/
+
+src/__pycache__/data\.cpython-36\.pyc
