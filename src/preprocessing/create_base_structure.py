@@ -8,6 +8,7 @@ import src.data as data
 import src.utility as utils
 from time import time
 
+
 def create_base_structure():
     """
     Call to create the base structure it is a pd Dataframe composed as follow:
@@ -26,20 +27,19 @@ def create_base_structure():
     speeds_train = data.speeds_train()
     speeds_test = data.speeds_test()
 
-    datetime_train = speeds_train.DATETIME_UTC.unique()
-    datetime_test = speeds_test.DATETIME_UTC.unique()
-
-    # get all the unique datetimes of train and test
-    datetime_full = set(datetime_train)|set(datetime_test)
+    # create all the datetimes between min train and max test datetime
+    min_train_datetime = sorted(pd.to_datetime(speeds_train['DATETIME_UTC']).unique())[0].astype('int') // 10 ** 9
+    max_test_datetime = sorted(pd.to_datetime(speeds_test['DATETIME_UTC']).unique())[-1].astype('int') // 10 ** 9
+    range_datetimes = np.arange(min_train_datetime, max_test_datetime, 15 * 60)
+    datetime_df = pd.DataFrame(pd.to_datetime(range_datetimes, unit='s'), columns=['DATETIME_UTC'])
 
     key_2_train = speeds_train.KEY_2.unique()
     key_2_test = speeds_test.KEY_2.unique()
 
     # get all the unique key_2 in train and test
-    key_2_full = sorted(set(key_2_test)|set(key_2_train))
+    key_2_full = sorted(set(key_2_test) | set(key_2_train))
 
     temp = pd.DataFrame(list(map(lambda x: x.split('_'), key_2_full)), columns=['KEY', 'KM'])
-    datetime_df = pd.DataFrame(np.array(list(datetime_full)), columns=['DATETIME_UTC'])
 
     # add dummy column to let a merge do a cartesian product
     temp['dummy'] = 0
@@ -65,7 +65,7 @@ def create_base_structure():
     base_structure.to_csv(f'{_BASE_PATH}/base_structure.csv', index=False)
     print('Done\n')
 
-    print(f'PROCEDURE ENDED SUCCESSFULLY IN: {round(time()-start,4)} s')
+    print(f'PROCEDURE ENDED SUCCESSFULLY IN: {round(time() - start, 4)} s')
 
 
 if __name__ == '__main__':
