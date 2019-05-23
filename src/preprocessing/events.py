@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 import os
+import src.utility as utility
 import src.utils.folder as folder
 
 def preprocess(km_influence_before=5, km_influence_after=2):
@@ -10,6 +11,8 @@ def preprocess(km_influence_before=5, km_influence_after=2):
     - if KM_START is equal to KM_END, a new column is created containing the original value and KM_START
         is decreased by km_influence_before and KM_END is increased by km_influence_after to create a valid
         range
+    - expand the timestamps creating new rows for the intermediate timestamps (ex: event from 13:12 to 13:43 will be expanded
+        to 3 rows: 13:15, 13:30, 13:45)
     """
     for mode in ['train','test']:
         filename = 'events_{}.csv.gz'
@@ -29,6 +32,9 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         # modifiy KM_START and KM_END to be in the range of 5km
         events_df.loc[mask_km_start_equal_km_end, 'KM_START'] -= km_influence_before
         events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_after
+
+        # expand the timestamps
+        utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
 
         # save the df
         preprocessing_folder = 'dataset/preprocessed'
