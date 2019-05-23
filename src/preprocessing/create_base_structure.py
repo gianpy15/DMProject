@@ -49,15 +49,8 @@ def create_base_structure():
     base_structure = pd.merge(datetime_df, temp).drop(['dummy'], axis=1)
     print('Done\n')
 
-    # reorder the columns in KEY, DATETIME_UTC, KM
-    km_series = base_structure.pop('KM')
-    datetime_series = base_structure.pop('DATETIME_UTC')
-
-    base_structure['DATETIME_UTC'] = datetime_series
-    base_structure['KM'] = km_series
-
     print('sorting values...')
-    base_structure = base_structure.sort_values(['KEY', 'DATETIME_UTC', 'KM']).reset_index(drop=True)
+    base_structure = base_structure.sort_values(['DATETIME_UTC', 'KEY', 'KM']).reset_index(drop=True)
     print('Done\n')
 
     # save the base structure
