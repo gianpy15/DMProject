@@ -47,6 +47,3 @@ def preprocess(km_influence_before=5, km_influence_after=2):
 
 if __name__ == "__main__":
     preprocess()
-
-if __name__ == '__main__':
-    preprocess()
