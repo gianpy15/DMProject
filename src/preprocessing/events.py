@@ -16,7 +16,7 @@ def preprocess(km_influence_before=5, km_influence_after=2):
     """
     for mode in ['train','test']:
         filename = 'events_{}.csv.gz'
-        events_df = pd.read_csv(os.path.join('dataset/originals', filename.format(mode)))
+        events_df = pd.read_csv(os.path.join('resources/dataset/originals', filename.format(mode)))
 
         start_km = np.minimum(events_df['KM_START'].values, events_df['KM_END'].values)
         end_km = np.maximum(events_df['KM_START'].values, events_df['KM_END'].values)
@@ -37,9 +37,11 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
 
         # save the df
-        preprocessing_folder = 'dataset/preprocessed'
+        preprocessing_folder = 'resources/dataset/preprocessed'
         path = os.path.join(preprocessing_folder, filename.format(mode))
         folder.create_if_does_not_exist(preprocessing_folder)
-        events_df.to_csv(path)
+        events_df.to_csv(path, index=False, compression='gzip')
 
 
+if __name__ == '__main__':
+    preprocess()
