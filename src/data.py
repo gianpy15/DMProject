@@ -11,6 +11,7 @@ _BASE_PATH_PREPROCESSED = 'resources/dataset/preprocessed'
 # initialize variable for caching
 _distances_df = None
 _sensors_df = None
+_sensors_df_preprocessed = None
 _events_df = {'train': None, 'test': None}
 _speeds_df = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
@@ -97,8 +98,18 @@ def sensors():
     print('shape of the dataframe is: {}'.format(_sensors_df.shape))
     return _sensors_df
 
+def sensors_preprocessed():
+    global _sensors_df_preprocessed
+    start_t = time()
+    if _sensors_df_preprocessed is None:
+        print('caching sensors\n')
+        _sensors_df_preprocessed = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/sensors.csv.gz', engine='c')
+    print(f'sensors loaded in: {round(time() - start_t, 4)} s\n')
+    print('shape of the dataframe is: {}'.format(_sensors_df_preprocessed.shape))
+    return _sensors_df_preprocessed
+
 if __name__ == '__main__':
-    a = base_structure()
+    a = sensors_preprocessed()
 
 
 
