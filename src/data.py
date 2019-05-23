@@ -14,6 +14,8 @@ _distances_df = None
 _sensors_df = None
 _sensors_df_preprocessed = None
 _events_df = {'train': None, 'test': None}
+_events_df_preprocessed = {'train': None, 'test': None}
+
 _speeds_df = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
 _base_structure_df = None
@@ -69,6 +71,24 @@ def events_test():
     print(f'events_test loaded in: {round(time()-start_t,4)} s\n')
     print('shape of the dataframe is: {}'.format(_events_df['test'].shape))
     return _events_df['test']
+
+def events_train_preprocessed():
+    start_t = time()
+    if _events_df_preprocessed['train'] is None:
+        print('caching events_train\n')
+        _events_df_preprocessed['train'] = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/events_train.csv.gz', engine='c')
+    print(f'events_train loaded in: {round(time()-start_t,4)} s\n')
+    print('shape of the dataframe is: {}'.format(_events_df['train'].shape))
+    return _events_df_preprocessed['train']
+
+def events_test_preprocessed():
+    start_t = time()
+    if _events_df_preprocessed['test'] is None:
+        print('caching events_test\n')
+        _events_df_preprocessed['test'] = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/events_test.csv.gz', engine='c')
+    print(f'events_test loaded in: {round(time()-start_t,4)} s\n')
+    print('shape of the dataframe is: {}'.format(_events_df_preprocessed['test'].shape))
+    return _events_df_preprocessed['test']
 
 def speeds_train():
     start_t = time()
