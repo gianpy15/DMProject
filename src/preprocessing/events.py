@@ -1,7 +1,10 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
 import numpy as np
 import pandas as pd
 
-import os
 import src.utility as utility
 import src.utils.folder as folder
 
@@ -42,4 +45,6 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         folder.create_if_does_not_exist(preprocessing_folder)
         events_df.to_csv(path)
 
+if __name__ == "__main__":
+    preprocess()
 

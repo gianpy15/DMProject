@@ -58,13 +58,13 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     df['step_duration'] = (df.END_DATETIME_UTC - df[col_ts_start]) // (15*60) +1
 
     # build the time range from start to end at steps of 900 seconds (15 minutes)
-    df['time_range'] = df.progress_apply(lambda x:
+    df['DATETIME_UTC'] = df.progress_apply(lambda x:
                                     np.arange(x[col_ts_start], x[col_ts_end] + 900, 900), axis=1)
     
     # expand the list of timestamps in the time_range
     df = pd.DataFrame({
         col: np.repeat(df[col].values, df['step_duration'])
-        for col in df.columns.drop('time_range')}
-    ).assign(**{'time_range': np.concatenate(df['time_range'].values)})
+        for col in df.columns.drop('DATETIME_UTC')}
+    ).assign(**{'DATETIME_UTC': np.concatenate(df['DATETIME_UTC'].values)})
 
     return df
