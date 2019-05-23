@@ -75,6 +75,7 @@ def speeds_train():
     if _speeds_df['train'] is None:
         print('caching speeds_train\n')
         _speeds_df['train'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/speeds_train.csv.gz', engine='c')
+        _speeds_df['train'].DATETIME_UTC = pd.to_datetime(_speeds_df['train'].DATETIME_UTC)
     print(f'speeds_train loaded in: {round(time()-start_t,4)} s\n')
     print('shape of the dataframe is: {}'.format(_speeds_df['train'].shape))
     return _speeds_df['train']
@@ -84,6 +85,7 @@ def speeds_test():
     if _speeds_df['test'] is None:
         print('caching speeds_test\n')
         _speeds_df['test'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/speeds_test.csv.gz', engine='c')
+        _speeds_df['test'].DATETIME_UTC = pd.to_datetime(_speeds_df['test'].DATETIME_UTC)
     print(f'speeds_test loaded in: {round(time()-start_t,4)} s\n')
     print('shape of the dataframe is: {}'.format(_speeds_df['test'].shape))
     return _speeds_df['test']
