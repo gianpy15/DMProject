@@ -114,3 +114,8 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     ).assign(**{'DATETIME_UTC': np.concatenate(df['DATETIME_UTC'].values)})
 
     return df
+
+def merge_speed_events(speed_df, events_df):
+    joined = speed_df.merge(events_df, how='left')
+    joined = joined[(joined.KM >= joined.KM_START) & (joined.KM <= joined.KM_END)]
+    return joined
