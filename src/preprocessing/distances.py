@@ -16,6 +16,17 @@ def preprocess():
         distances_df.at[i,'KM'] = km
     distances_df=distances_df.drop(["KEY_KM"],axis=1)
 
+    # drop nans
+    distances_df = distances_df.dropna()
+
+    # add ';' every 2 ',': split is easier !
+    stations = distances_df.STATIONS
+    stations_splitted_nice = []
+    for s in stations:
+        split = s.split(',')
+        stations_splitted_nice.append(';'.join(['{},{}'.format(split[2*i], split[2*i + 1]) for i in range(int(len(split)/2))]))
+    distances_df.STATIONS = stations_splitted_nice
+
     # finally save
     distances_df.to_csv(distances_df_path, index=False, compression='gzip')
 
