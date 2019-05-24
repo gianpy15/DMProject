@@ -4,6 +4,7 @@ from tqdm import tqdm
 from time import time
 import os
 import pandas as pd
+import src.utility as utility
 
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
@@ -55,81 +56,47 @@ def base_structure():
     print('shape of the dataframe is: {}'.format(temp.shape))
     return temp
 
-def events_train():
-    start_t = time()
-    if _events_df['train'] is None:
-        print('caching events_train\n')
-        _events_df['train'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/events_train.csv.gz', engine='c')
-    print(f'events_train loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_events_df['train'].shape))
-    return _events_df['train']
+def events_original(mode='train'):
+    if _events_df[mode] is None:
+        filepath = f'{_BASE_PATH_ORIGINALS}/events_{mode}.csv.gz'
+        print(f'caching {filepath}')
+        _events_df[mode] = pd.read_csv(filepath, engine='c')
+    
+    return _events_df[mode]
 
-def events_test():
-    start_t = time()
-    if _events_df['test'] is None:
-        print('caching events_test\n')
-        _events_df['test'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/events_test.csv.gz', engine='c')
-    print(f'events_test loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_events_df['test'].shape))
-    return _events_df['test']
+def events(mode='train'):
+    if _events_df_preprocessed[mode] is None:
+        filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
+        print(f'caching {filepath}')
+        _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c')
+        _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
+                                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+    
+    return _events_df_preprocessed[mode]
 
-def events_train_preprocessed():
-    start_t = time()
-    if _events_df_preprocessed['train'] is None:
-        print('caching events_train\n')
-        _events_df_preprocessed['train'] = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/events_train.csv.gz', engine='c')
-    print(f'events_train loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_events_df['train'].shape))
-    return _events_df_preprocessed['train']
 
-def events_test_preprocessed():
-    start_t = time()
-    if _events_df_preprocessed['test'] is None:
-        print('caching events_test\n')
-        _events_df_preprocessed['test'] = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/events_test.csv.gz', engine='c')
-    print(f'events_test loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_events_df_preprocessed['test'].shape))
-    return _events_df_preprocessed['test']
+def speeds(mode='train'):
+    if _speeds_df[mode] is None:
+        filepath = f'{_BASE_PATH_ORIGINALS}/speeds_{mode}.csv.gz'
+        print(f'caching {filepath}')
+        _speeds_df[mode] = pd.read_csv(filepath, engine='c')
+        _speeds_df[mode] = utility.df_to_datetime(_speeds_df[mode], columns=['DATETIME_UTC'])
 
-def speeds_train():
-    start_t = time()
-    if _speeds_df['train'] is None:
-        print('caching speeds_train\n')
-        _speeds_df['train'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/speeds_train.csv.gz', engine='c')
-        _speeds_df['train'].DATETIME_UTC = pd.to_datetime(_speeds_df['train'].DATETIME_UTC)
-    print(f'speeds_train loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_speeds_df['train'].shape))
-    return _speeds_df['train']
+    return _speeds_df[mode]
 
-def speeds_test():
-    start_t = time()
-    if _speeds_df['test'] is None:
-        print('caching speeds_test\n')
-        _speeds_df['test'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/speeds_test.csv.gz', engine='c')
-        _speeds_df['test'].DATETIME_UTC = pd.to_datetime(_speeds_df['test'].DATETIME_UTC)
-    print(f'speeds_test loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_speeds_df['test'].shape))
-    return _speeds_df['test']
 
-def weather_train():
-    start_t = time()
-    if _weather_df['train'] is None:
-        print('caching weather_train\n')
-        _weather_df['train'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/weather_train.csv.gz', engine='c')
-    print(f'weather_train loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_weather_df['train'].shape))
-    return _weather_df['train']
+def weather_original(mode='train'):
+    if _weather_df[mode] is None:
+        filepath = f'{_BASE_PATH_ORIGINALS}/weather_{mode}.csv.gz'
+        print(f'caching {filepath}')
+        _weather_df[mode] = pd.read_csv(filepath, engine='c')
+        _weather_df[mode] = utility.df_to_datetime(_weather_df[mode], columns=['DATETIME_UTC'])
+    
+    return _weather_df[mode]
 
-def weather_test():
-    start_t = time()
-    if _weather_df['test'] is None:
-        print('caching weather_test\n')
-        _weather_df['test'] = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/weather_test.csv.gz', engine='c')
-    print(f'weather_test loaded in: {round(time()-start_t,4)} s\n')
-    print('shape of the dataframe is: {}'.format(_weather_df['test'].shape))
-    return _weather_df['test']
 
-def sensors():
+
+def sensors_original():
     global _sensors_df
     start_t = time()
     if _sensors_df is None:
@@ -139,7 +106,7 @@ def sensors():
     print('shape of the dataframe is: {}'.format(_sensors_df.shape))
     return _sensors_df
 
-def sensors_preprocessed():
+def sensors():
     global _sensors_df_preprocessed
     start_t = time()
     if _sensors_df_preprocessed is None:
