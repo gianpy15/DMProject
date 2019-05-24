@@ -37,7 +37,11 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_after
 
         # expand the timestamps
-        utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+        events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+
+        events_df['START_DATETIME_UTC'] = pd.to_datetime(events_df['START_DATETIME_UTC'], unit='s')
+        events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
+        events_df['DATETIME_UTC'] = pd.to_datetime(events_df['DATETIME_UTC'], unit='s')
 
         # save the df
         preprocessing_folder = 'resources/dataset/preprocessed'
