@@ -12,6 +12,11 @@ def check_folder(path):
         print(f'{path} folder created')
         os.makedirs(path, exist_ok=True)
 
+def df_to_datetime(df, columns):
+    for c in columns:
+        df[c] = pd.to_datetime(df[c])
+    return df
+
 def discretize_timestamp(df, col_name, step=15*60, floor=True, rename_col=None):
     """
     Discretize a datetime column of a dataframe.

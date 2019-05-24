@@ -24,8 +24,8 @@ def create_base_structure():
     # check if the folder exsist if not create it
     utils.check_folder(_BASE_PATH)
 
-    speeds_train = data.speeds_train()
-    speeds_test = data.speeds_test()
+    speeds_train = data.speeds(mode='train')
+    speeds_test = data.speeds(mode='test')
 
     # create all the datetimes between min train and max test datetime
     min_train_datetime = sorted(pd.to_datetime(speeds_train['DATETIME_UTC']).unique())[0].astype('int') // 10 ** 9
