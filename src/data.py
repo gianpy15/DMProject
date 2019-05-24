@@ -10,7 +10,8 @@ _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
 _BASE_PATH_PREPROCESSED = 'resources/dataset/preprocessed'
 
 # initialize variable for caching
-_distances_df = None
+_distances_df_original = None
+_distances_df_preprocessed = None
 _sensors_df = None
 _sensors_df_preprocessed = None
 _events_df = {'train': None, 'test': None}
@@ -148,8 +149,26 @@ def sensors_preprocessed():
     print('shape of the dataframe is: {}'.format(_sensors_df_preprocessed.shape))
     return _sensors_df_preprocessed
 
+def distances_original():
+    global _distances_df_original
+    start_t = time()
+    if _distances_df_original is None:
+        print('caching distances\n')
+        _distances_df_original = pd.read_csv(f'{_BASE_PATH_ORIGINALS}/distances.csv.gz',sep='|',names = ["KEY_KM", "STATIONS"])
+    print(f'distances loaded in: {round(time() - start_t, 4)} s\n')
+    print('shape of the dataframe is: {}'.format(_distances_df_original.shape))
+    return _distances_df_original
+
+def distances_proprocessed():
+    global _distances_df_preprocessed
+    start_t = time()
+    if _distances_df_preprocessed is None:
+        print('caching distances\n')
+        _distances_df_preprocessed = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/distances.csv.gz')
+    print(f'distances loaded in: {round(time() - start_t, 4)} s\n')
+    print('shape of the dataframe is: {}'.format(_distances_df_preprocessed.shape))
+    return _distances_df_preprocessed
+
 if __name__ == '__main__':
     a = sensors_preprocessed()
-
-
 
