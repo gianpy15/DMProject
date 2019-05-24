@@ -27,6 +27,17 @@ def preprocess():
         stations_splitted_nice.append(';'.join(['{},{}'.format(split[2*i], split[2*i + 1]) for i in range(int(len(split)/2))]))
     distances_df.STATIONS = stations_splitted_nice
 
+    # order stations by the closest
+    stations = distances_df.STATIONS
+    ordered_stations = []
+    for s in stations:
+        s_splitted_semicolon_unsorted = s.split(';')
+        s_expanded_unsorted = [[c.split(',')[0], float(c.split(',')[1])] for c in s_splitted_semicolon_unsorted]
+        s_expanded_sorted = sorted(s_expanded_unsorted, key = lambda x: int(x[1]))
+        s_splitted_semicolon_unsorted = ['{},{}'.format(c[0], c[1]) for c in s_expanded_sorted]
+        ordered_stations.append(';'.join(s_splitted_semicolon_unsorted))
+    distances_df.STATIONS = ordered_stations
+
     # finally save
     distances_df.to_csv(distances_df_path, index=False, compression='gzip')
 
