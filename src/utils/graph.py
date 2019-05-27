@@ -46,8 +46,8 @@ def show_speeds_with_events(speed_df, road_key, from_datetime='2018-11-15', to_d
         linewidth = number_of_lanes / 2
         
         # events involving the sensor
-        sensor_events = sensor_speeds[sensor_speeds['index'].notnull()]
-        event_ids = sensor_events['index'].unique() #.astype(int)
+        sensor_events = sensor_speeds[sensor_speeds['event_index'].notnull()]
+        event_ids = sensor_events['event_index'].unique() #.astype(int)
         number_of_events = len(event_ids)
         
         # add the speed plot
@@ -56,14 +56,19 @@ def show_speeds_with_events(speed_df, road_key, from_datetime='2018-11-15', to_d
         # add the events scatter plots if present
         if(number_of_events > 0):
             for evt_id in event_ids:
-                e = sensor_events[sensor_events['index'] == evt_id]
+                e = sensor_events[sensor_events['event_index'] == evt_id]
                 plots.append( go.Scatter(x=e.DATETIME_UTC, y=e.SPEED_AVG, mode='markers', 
                                  name=f'{[evt_id]} {e.EVENT_TYPE.values[0]} (road {e.KM.values[0]})') )
         
         plots_info.append( (str(km), number_of_events+1, number_of_lanes, len(sensor_speeds.DATETIME_UTC) ) )
     
-    buttons = []
     total_plots = sum([l[1] for l in plots_info])
+    buttons = [{ 'label': 'Show all',
+             'method': 'update',
+             'args': [  {'visible': [True] * total_plots },
+                        {'title': f'All ({sensors_count} sensors)' }
+                     ]}
+    ]
     current = 0
     for pi in plots_info:
         buttons.append( { 'label': pi[0],
@@ -76,5 +81,6 @@ def show_speeds_with_events(speed_df, road_key, from_datetime='2018-11-15', to_d
     # add the dropdowns
     updatemenus = [{ 'active':-1, 'buttons':buttons }]
     
-    iplot({'data':plots, 'layout': {'updatemenus':updatemenus} })
+    if len(plots) > 0:
+        iplot({'data':plots, 'layout': {'updatemenus':updatemenus} })
     
