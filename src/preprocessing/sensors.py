@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
 import numpy as np
 import pandas as pd
 import src.data as data

@@ -1,7 +1,10 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
 import numpy as np
 import pandas as pd
 
-import os
 import src.utility as utility
 import src.utils.folder as folder
 
@@ -34,7 +37,11 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_after
 
         # expand the timestamps
-        utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+        events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+
+        events_df['START_DATETIME_UTC'] = pd.to_datetime(events_df['START_DATETIME_UTC'], unit='s')
+        events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
+        events_df['DATETIME_UTC'] = pd.to_datetime(events_df['DATETIME_UTC'], unit='s')
 
         # save the df
         preprocessing_folder = 'resources/dataset/preprocessed'
@@ -42,6 +49,5 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         folder.create_if_does_not_exist(preprocessing_folder)
         events_df.to_csv(path, index=False, compression='gzip')
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     preprocess()
