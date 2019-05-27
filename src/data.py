@@ -22,13 +22,14 @@ _speeds_df = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
 _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
+_base_structure_hours_df = None
+
 
 def check_mode(mode):
     assert mode in ['train', 'test']
 
 def base_structure(mode='train'):
-    assert mode in ['train','test','full']
-
+    assert mode in ['train', 'test', 'full']
     import src.preprocessing.create_base_structure as create_base_structure
     # HARDCODED start index test
     first_test_index = 15681120
@@ -52,6 +53,25 @@ def base_structure(mode='train'):
     else:
         temp = _base_structure_df
     return temp
+
+
+def base_structure_hours():
+    import src.preprocessing.create_base_structure as create_base_structure
+    start_t = time()
+    global _base_structure_hours_df
+    base_structure_path = f'{_BASE_PATH_PREPROCESSED}/base_structure_hours.csv'
+    if _base_structure_hours_df is None:
+        if not os.path.isfile(base_structure_path):
+            print('base structure not found... creating it...')
+            create_base_structure.create_base_structure_hours()
+        if _base_structure_hours_df is None:
+            print('caching base structure\n')
+            _base_structure_hours_df = pd.read_csv(base_structure_path)
+            _base_structure_hours_df.DATETIME_UTC = pd.to_datetime(_base_structure_hours_df.DATETIME_UTC)
+    print(f'base structure loaded in: {round(time() - start_t, 4)} s\n')
+    print('shape of the dataframe is: {}'.format(_base_structure_hours_df.shape))
+    return _base_structure_hours_df
+
 
 def base_dataset(mode='train'):
     check_mode(mode)
