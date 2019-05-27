@@ -21,42 +21,57 @@ _events_df_preprocessed = {'train': None, 'test': None}
 _speeds_df = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
 _base_structure_df = None
+_base_dataset_df = {'train': None, 'test': None}
 
-def base_structure():
+def check_mode(mode):
+    assert mode in ['train', 'test']
+
+def base_structure(mode='train'):
+    assert mode in ['train','test','full']
+
     import src.preprocessing.create_base_structure as create_base_structure
     # HARDCODED start index test
     first_test_index = 15681120
-
-    print('Select the mode:\n')
-    print('1) TRAIN\n'
-          '2) TEST\n'
-          '3) FULL\n')
-    _MODE = int(input())
 
     start_t = time()
     global _base_structure_df
     base_structure_path = f'{_BASE_PATH_PREPROCESSED}/base_structure.csv'
     if _base_structure_df is None:
         if not os.path.isfile(base_structure_path):
-            print('base structure not found... creating it...')
+            print('base structure not found, creating it...')
             create_base_structure.create_base_structure()
         if _base_structure_df is None:
-            print('caching base structure\n')
+            print('caching base structure...')
             _base_structure_df = pd.read_csv(base_structure_path)
             _base_structure_df.DATETIME_UTC = pd.to_datetime(_base_structure_df.DATETIME_UTC)
     print(f'base structure loaded in: {round(time() - start_t, 4)} s\n')
-    if _MODE == 1:
-        print('train base_structure filtered')
-        temp = _base_structure_df[:first_test_index-1]
-    elif _MODE == 2:
-        print('test base_structure filtered')
+    if mode == 'train':
+        temp = _base_structure_df[:first_test_index]
+    elif mode == 'test':
         temp = _base_structure_df[first_test_index:]
     else:
         temp = _base_structure_df
-    print('shape of the dataframe is: {}'.format(temp.shape))
     return temp
 
+def base_dataset(mode='train'):
+    check_mode(mode)
+    import src.preprocessing.create_base_dataset as create_base_dataset
+
+    base_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'base_dataframe_{mode}.csv.gz')
+    if _base_dataset_df[mode] is None:
+        if not os.path.isfile(base_dataset_path):
+            print('base dataset not found... creating it...')
+            create_base_dataset.create_base_dataset()    
+    
+        print('caching base dataset {}'.format(mode))
+        _base_dataset_df[mode] = pd.read_csv(base_dataset_path)
+        _base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
+                                        columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+
+    return _base_dataset_df[mode]
+
 def events_original(mode='train'):
+    check_mode(mode)
     if _events_df[mode] is None:
         filepath = f'{_BASE_PATH_ORIGINALS}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
@@ -65,6 +80,7 @@ def events_original(mode='train'):
     return _events_df[mode]
 
 def events(mode='train'):
+    check_mode(mode)
     if _events_df_preprocessed[mode] is None:
         filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
@@ -76,6 +92,7 @@ def events(mode='train'):
 
 
 def speeds(mode='train'):
+    check_mode(mode)
     if _speeds_df[mode] is None:
         filepath = f'{_BASE_PATH_ORIGINALS}/speeds_{mode}.csv.gz'
         print(f'caching {filepath}')
@@ -86,6 +103,7 @@ def speeds(mode='train'):
 
 
 def weather_original(mode='train'):
+    check_mode(mode)
     if _weather_df[mode] is None:
         filepath = f'{_BASE_PATH_ORIGINALS}/weather_{mode}.csv.gz'
         print(f'caching {filepath}')
@@ -136,6 +154,4 @@ def distances_proprocessed():
     print('shape of the dataframe is: {}'.format(_distances_df_preprocessed.shape))
     return _distances_df_preprocessed
 
-if __name__ == '__main__':
-    a = sensors_preprocessed()
 
