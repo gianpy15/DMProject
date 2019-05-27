@@ -82,9 +82,9 @@ def preprocess():
     stations_splitted_nice = []
     for s in stations:
         split = s.split(',')
-        stations_splitted_nice.append(';'.join(['{},{}'.format(split[2*i], split[2*i + 1]) for i in range(int(len(split)/2))]))
+        string = ';'.join(['{},{}'.format(split[2*i], split[2*i + 1]) for i in range(int(len(split)/2))])
+        stations_splitted_nice.append(string)
     distances_df.STATIONS = stations_splitted_nice
-
 
     # infer about other stations: put into distances_df, in each sensor,
     # informations about the distance of also other meteorological stations
@@ -103,11 +103,20 @@ def preprocess():
             for item in d[station].items():
                 if item[0] not in stations_already_present:
                     inferred_string += '{},{};'.format(item[0], float(item[1]) + float(distanc))
-        inferred_stations.append(inferred_string)
-    distances_df['INFERRED_STATIONS'] = inferred_stations
+                    stations_already_present.add(item[0])
+        inferred_stations.append(inferred_string[:-1])
+
+    # append the inferred stations to the original stations
+    appended_stations = []
+    stations = distances_df.STATIONS.values
+    for idx in range(len(stations)):
+        if len(inferred_stations[idx]) > 0:
+            appended_stations.append('{};{}'.format(stations[idx], inferred_stations[idx]))
+        else:
+            appended_stations.append(stations[idx])
+    distances_df['STATIONS'] = appended_stations
 
     distances_df = sort_station_by_closest(distances_df, 'STATIONS')
-    distances_df = sort_station_by_closest(distances_df, 'INFERRED_STATIONS')
 
     # finally save
     distances_df.to_csv(distances_df_path, index=False, compression='gzip')
