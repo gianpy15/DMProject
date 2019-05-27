@@ -12,7 +12,7 @@ def preprocess_sensors():
     check_folder(_BASE_PATH)
 
     # drop the duplicates rows
-    sensors_df = data.sensors()
+    sensors_df = data.sensors_original()
     print('dropping duplicates...')
     sensors_df = sensors_df.drop_duplicates()
     print(f'saving to {_BASE_PATH}/sensors.csv.gz')
