@@ -74,6 +74,9 @@ def base_structure_hours():
 
 
 def base_dataset(mode='train'):
+    """
+    Return X and Y dataframes
+    """
     check_mode(mode)
     import src.preprocessing.create_base_dataset as create_base_dataset
 
@@ -81,14 +84,15 @@ def base_dataset(mode='train'):
     if _base_dataset_df[mode] is None:
         if not os.path.isfile(base_dataset_path):
             print('base dataset not found... creating it...')
-            create_base_dataset.create_base_dataset()    
+            create_base_dataset.create_base_dataset(steps_behind_event=10)
     
         print('caching base dataset {}'.format(mode))
-        _base_dataset_df[mode] = pd.read_csv(base_dataset_path)
-        _base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
-                                        columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+        _base_dataset_df[mode] = pd.read_csv(base_dataset_path, parse_dates=True)
+        #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
+        #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
-    return _base_dataset_df[mode]
+    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
+    return _base_dataset_df[mode].drop(Y_columns, axis=1), _base_dataset_df[mode][Y_columns]
 
 def events_original(mode='train'):
     check_mode(mode)
