@@ -40,7 +40,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df = joined_df.round(4).groupby('sample_id').agg({
             'KEY':'first',
             'KM':'first',
-            'event_idex':lambda: x: x.values[event_beginning_step],
+            'event_index':lambda x: x.values[event_beginning_step],
             'DATETIME_UTC':list,
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
             'SPEED_SD':list,
@@ -67,22 +67,25 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         
         joined_df[['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                     'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
-                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.progress_apply(split_prediction_fields, axis=1)
+                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=event_beginning_step-1)
 
         for col_name in ['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                             'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:
             if col_name.endswith('_Y'):
-                new_cols = ['col_name_{}'.format(i) for i in range(-steps_behind_event, 0)]
+                interval = list(range(0, steps_after_event+1))
+                new_cols = ['{}_{}'.format(col_name, i) for i in interval]
             else:
-                new_cols = ['col_name_{}'.format(i) for i in range(0, steps_after_event+1)]
-            joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
+                interval = list(range(-steps_behind_event, 0))
+                new_cols = ['{}_{}'.format(col_name, i) for i in interval]
+            
+            joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values[interval].tolist(), index=joined_df.index.values[interval])
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
                                     'DATETIME_UTC_Y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
 
         if mode == 'train':
             # take random validation rows
-            
+            pass
             # random_indices = random.shuffle(joined_df.index)
             # validation_indices = random_indices[0: int(len(random_indices) * validation_split)]
             # train_df = joined_df.drop(validation_indices)
