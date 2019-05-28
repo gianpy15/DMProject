@@ -23,20 +23,21 @@ def compute_meteo_station_distances(distances_df):
         stations = e.split(',')[0::2]
         j = 0
         while j < len(distances) - 1:
-            i = j+1
-            dist = distances[i] + distances[j]
-            
-            if stations[j] not in d[stations[i]]:
-                d[stations[i]][stations[j]] = dist
-            else:
-                if d[stations[i]][stations[j]] > dist:
+            i = j + 1
+            while i < len(distances):
+                dist = distances[i] + distances[j]
+                if stations[j] not in d[stations[i]]:
                     d[stations[i]][stations[j]] = dist
-            
-            if stations[i] not in d[stations[j]]:
-                d[stations[j]][stations[i]] = dist
-            else:
-                if d[stations[j]][stations[i]] > dist:
+                else:
+                    if d[stations[i]][stations[j]] > dist:
+                        d[stations[i]][stations[j]] = dist
+                
+                if stations[i] not in d[stations[j]]:
                     d[stations[j]][stations[i]] = dist
+                else:
+                    if d[stations[j]][stations[i]] > dist:
+                        d[stations[j]][stations[i]] = dist
+                i += 1
 
             j += 1
     return d
@@ -100,7 +101,7 @@ def preprocess():
             stations_already_present.add(station)
         for e in splitted:
             distanc = e.split(',')[1]
-            for item in d[station].items():
+            for item in d[e.split(',')[0]].items():
                 if item[0] not in stations_already_present:
                     inferred_string += '{},{};'.format(item[0], float(item[1]) + float(distanc))
                     stations_already_present.add(item[0])
