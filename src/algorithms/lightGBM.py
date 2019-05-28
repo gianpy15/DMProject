@@ -3,7 +3,8 @@ from tqdm import tqdm
 import src.data as data
 tqdm.pandas()
 from src.algorithms.multi_output_regressor_wrapper import MultiOutputRegressorWrapper
-
+import pandas as pd
+import numpy as np
 
 import datetime
 from skopt.space import Real, Integer, Categorical
@@ -18,21 +19,23 @@ class lightGBM():
         self.eval_res = {}
         self.model = None
 
+    def get_params(self, deep):
+        return {'params_dict': self.params_dict,
+                'mode': self.mode}
+
+    def set_params(self):
+        pass
+
+
     def fit(self, X, y, X_val=None, y_val = None):
         _VALIDATION = False
 
         # initialize the model
         self.model = lgb.LGBMRegressor(**self.params_dict)
 
-        # reduce the mem_usage of the dataframes and set the correct types to the columns
-        X = reduce_mem_usage(X)
-        y = reduce_mem_usage(y)
-
         if (X_val is not None) and (y_val is not None):
             # TODO IS NOT COMPLETED
             print('Validation detected...')
-            X_val = reduce_mem_usage(X_val)
-            y_val = reduce_mem_usage(y_val)
             self.model.fit(X, y, eval_set=[(X_val, y_val)], verbose = True)
         else:
             print('Train whitout validation...')
@@ -68,9 +71,9 @@ class lightGBM():
         # return negative mrr
         return self.eval_res['validation_set']['MRR'][self.model.booster_.best_iteration - 1]
 
-    def predict(self):
-        # TODO
-        pass
+    def predict(self, X):
+        preds = self.model.predict(X)
+        return preds
 
 
 
@@ -100,11 +103,18 @@ if __name__ == '__main__':
         'print_every': 100,
     }
 
-    X, y = data.base_dataset('train')
-
+    X, y = data.dataset('train')
+    X = X.fillna(-1)
+    y = y.fillna(-1)
+    #X = reduce_mem_usage(X)
+    #y = reduce_mem_usage(y)
     model = lightGBM(mode='train', params_dict=params_dict)
-    model_wrapper = MultiOutputRegressorWrapper(model)
-    model_wrapper.fit(X, y)
+    model_wrapper = MultiOutputRegressorWrapper(model, X, y)
+    model_wrapper.fit()
+    a = model_wrapper.predict_train()
+    df = pd.DataFrame(np.concatenate([a, y], axis=1))
+    y = 7
+
 
 
 
