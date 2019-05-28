@@ -72,13 +72,11 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         for col_name in ['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                             'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:
             if col_name.endswith('_Y'):
-                interval = list(range(0, steps_after_event+1))
-                new_cols = ['{}_{}'.format(col_name, i) for i in interval]
+                new_cols = ['{}_{}'.format(col_name, i) for i in range(0, steps_after_event+1)]
             else:
-                interval = list(range(-steps_behind_event, 0))
-                new_cols = ['{}_{}'.format(col_name, i) for i in interval]
+                new_cols = ['{}_{}'.format(col_name, i) for i in range(-steps_behind_event, 0)]
             
-            joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values[interval].tolist(), index=joined_df.index.values[interval])
+            joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
                                     'DATETIME_UTC_Y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
