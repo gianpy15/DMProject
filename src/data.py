@@ -74,6 +74,9 @@ def base_structure_hours():
 
 
 def base_dataset(mode='train'):
+    """
+    Return df
+    """
     check_mode(mode)
     import src.preprocessing.create_base_dataset as create_base_dataset
 
@@ -81,14 +84,49 @@ def base_dataset(mode='train'):
     if _base_dataset_df[mode] is None:
         if not os.path.isfile(base_dataset_path):
             print('base dataset not found... creating it...')
-            create_base_dataset.create_base_dataset()    
+            create_base_dataset.create_base_dataset(steps_behind_event=10)
     
         print('caching base dataset {}'.format(mode))
-        _base_dataset_df[mode] = pd.read_csv(base_dataset_path)
-        _base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
-                                        columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+        _base_dataset_df[mode] = pd.read_csv(base_dataset_path, parse_dates=True)
+        #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
+        #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
     return _base_dataset_df[mode]
+
+def dataset(mode='train', onehot = True):
+    """
+    Retur X and Y
+    """
+    df = base_dataset(mode)
+
+    # retrieve the target values and move them on Y
+    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
+    y = df[Y_columns]
+
+    TO_DROP = ['KEY', 'KM', 'event_index']+Y_columns
+
+    df = df.drop(TO_DROP, axis=1)
+
+    # find the columns where is present DATETIME and filter them
+    #indices = np.nonzero(np.array(list(map(lambda x: x.find('DATETIME'), df.columns))))
+    X = df.filter(regex='^((?!DATETIME).)*$')
+
+    if onehot:
+        print('performing onehot')
+        columns_to_onehot = []
+        for col in X.columns:
+            col_type = df[col].dtype
+            if col_type == object:
+                columns_to_onehot.append(col)
+        X = pd.get_dummies(X,prefix='onehot', columns=columns_to_onehot)
+
+    return X, y
+
+
+
+
+
+
 
 def events_original(mode='train'):
     check_mode(mode)
@@ -104,7 +142,7 @@ def events(mode='train'):
     if _events_df_preprocessed[mode] is None:
         filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
-        _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c')
+        _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c', index_col=0)
         _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
                                                 columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
     
@@ -175,3 +213,5 @@ def distances_proprocessed():
     return _distances_df_preprocessed
 
 
+if __name__ == '__main__':
+    dataset()

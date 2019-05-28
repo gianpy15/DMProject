@@ -31,16 +31,19 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # ......
 
         # join dataframes
+        print('Merging speeds and events...')
         joined_df = utility.merge_speed_events(s, e)
 
         # create the time windows for each event
+        print('Creating time windows for events...')
         joined_df = utility.time_windows_event(joined_df, steps_behind=steps_behind_event, steps_after=steps_after_event)
 
+        print('Aggregating events in samples...')
         event_beginning_step = steps_behind_event+1
         joined_df = joined_df.round(4).groupby('sample_id').agg({
             'KEY':'first',
             'KM':'first',
-            'event_idex':lambda x: x.values[event_beginning_step],
+            'event_index':lambda x: x.values[event_beginning_step],
             'DATETIME_UTC':list,
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
             'SPEED_SD':list,
@@ -65,25 +68,27 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                     row.N_VEHICLES[:event_beginning_step],   row.N_VEHICLES[event_beginning_step:]
             ))
         
-        joined_df[['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
+        print('Splitting time steps into separate columns...')
+        joined_df[['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                     'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
-                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.progress_apply(split_prediction_fields, axis=1)
+                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=event_beginning_step-1)
 
-        for col_name in ['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
+        for col_name in ['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                             'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:
-            if col_name.endswith('_Y'):
-                new_cols = ['col_name_{}'.format(i) for i in range(-steps_behind_event, 0)]
+            if col_name.upper().endswith('_Y'):
+                new_cols = ['{}_{}'.format(col_name, i) for i in range(0, steps_after_event+1)]
             else:
-                new_cols = ['col_name_{}'.format(i) for i in range(0, steps_after_event+1)]
+                new_cols = ['{}_{}'.format(col_name, i) for i in range(-steps_behind_event, 0)]
+            
             joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
-                                    'DATETIME_UTC_Y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
+                                    'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
 
         if mode == 'train':
             pass
             # take random validation rows
-            
+            pass
             # random_indices = random.shuffle(joined_df.index)
             # validation_indices = random_indices[0: int(len(random_indices) * validation_split)]
             # train_df = joined_df.drop(validation_indices)
