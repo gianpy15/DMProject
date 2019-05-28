@@ -108,7 +108,7 @@ def events(mode='train'):
     if _events_df_preprocessed[mode] is None:
         filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
-        _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c')
+        _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c', index_col=0)
         _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
                                                 columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
     
