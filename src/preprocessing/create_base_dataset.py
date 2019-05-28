@@ -65,13 +65,13 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                     row.N_VEHICLES[:event_beginning_step],   row.N_VEHICLES[event_beginning_step:]
             ))
         
-        joined_df[['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
+        joined_df[['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                     'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
                     'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=event_beginning_step-1)
 
-        for col_name in ['DATETIME_UTC','DATETIME_UTC_Y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
+        for col_name in ['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                             'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:
-            if col_name.endswith('_Y'):
+            if col_name.upper().endswith('_Y'):
                 new_cols = ['{}_{}'.format(col_name, i) for i in range(0, steps_after_event+1)]
             else:
                 new_cols = ['{}_{}'.format(col_name, i) for i in range(-steps_behind_event, 0)]
@@ -79,7 +79,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
-                                    'DATETIME_UTC_Y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
+                                    'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
 
         if mode == 'train':
             # take random validation rows
