@@ -75,7 +75,7 @@ def base_structure_hours():
 
 def base_dataset(mode='train'):
     """
-    Return X and Y dataframes
+    Return df
     """
     check_mode(mode)
     import src.preprocessing.create_base_dataset as create_base_dataset
@@ -91,8 +91,42 @@ def base_dataset(mode='train'):
         #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
         #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
+    return _base_dataset_df[mode]
+
+def dataset(mode='train', onehot = True):
+    """
+    Retur X and Y
+    """
+    df = base_dataset(mode)
+
+    # retrieve the target values and move them on Y
     Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
-    return _base_dataset_df[mode].drop(Y_columns, axis=1), _base_dataset_df[mode][Y_columns]
+    y = df[Y_columns]
+
+    TO_DROP = ['KEY', 'KM', 'event_index']+Y_columns
+
+    df = df.drop(TO_DROP, axis=1)
+
+    # find the columns where is present DATETIME and filter them
+    #indices = np.nonzero(np.array(list(map(lambda x: x.find('DATETIME'), df.columns))))
+    X = df.filter(regex='^((?!DATETIME).)*$')
+
+    if onehot:
+        print('performing onehot')
+        columns_to_onehot = []
+        for col in X.columns:
+            col_type = df[col].dtype
+            if col_type == object:
+                columns_to_onehot.append(col)
+        X = pd.get_dummies(X,prefix='onehot', columns=columns_to_onehot)
+
+    return X, y
+
+
+
+
+
+
 
 def events_original(mode='train'):
     check_mode(mode)
@@ -179,3 +213,5 @@ def distances_proprocessed():
     return _distances_df_preprocessed
 
 
+if __name__ == '__main__':
+    dataset()
