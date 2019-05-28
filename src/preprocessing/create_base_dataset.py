@@ -40,7 +40,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df = joined_df.round(4).groupby('sample_id').agg({
             'KEY':'first',
             'KM':'first',
-            'event_idex':lambda: x: x.values[event_beginning_step],
+            'event_idex':lambda x: x.values[event_beginning_step],
             'DATETIME_UTC':list,
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
             'SPEED_SD':list,
@@ -81,6 +81,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                                     'DATETIME_UTC_Y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
 
         if mode == 'train':
+            pass
             # take random validation rows
             
             # random_indices = random.shuffle(joined_df.index)
