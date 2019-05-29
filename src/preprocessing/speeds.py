@@ -19,9 +19,10 @@ def setup_parser():
     return _parser
 
 
-def preprocess(infer_size: int, algorythm: str, data: str):
+def preprocess(infer_size: int = 3, algorythm: str = 'time', data: str = 'train'):
     speeds_df = {}
     dsets = ['train', 'test'] if data == 'all' else [data]
+    print('Reading datasets')
     if data in ['all', 'train']:
         speeds_df['train'] = pd.read_csv(resources_path('dataset', 'originals', 'speeds_train.csv.gz'))
 
@@ -29,7 +30,8 @@ def preprocess(infer_size: int, algorythm: str, data: str):
         speeds_df['test'] = pd.read_csv(resources_path('dataset', 'originals', 'speeds_test.csv.gz'))
 
     sensors_df = pd.read_csv(resources_path('dataset', 'originals', 'sensors.csv.gz'))
-
+    print('Done')
+    
     for s in dsets:
         print(f'Fitting values for {s} set')
         min_time = pd.to_datetime(speeds_df[s].DATETIME_UTC).astype('int').min()
@@ -60,8 +62,10 @@ def preprocess(infer_size: int, algorythm: str, data: str):
         complete_df = complete_df.set_index([DATETIME])
 
         complete_df = complete_df.interpolate(method=algorythm, limit=infer_size, limit_area='inside')
-
+        print('Done')
+        print('Saving CSV')
         complete_df.to_csv(resources_path('dataset', 'preprocessed', 'speeds_{}_imputed_time.csv.gz'.format(s)))
+        print('Done')
 
 
 if __name__ == '__main__':
