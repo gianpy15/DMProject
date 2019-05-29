@@ -93,7 +93,7 @@ def base_dataset(mode='train'):
 
     return _base_dataset_df[mode]
 
-def dataset(mode='train', onehot = True):
+def dataset(mode='train', onehot=True, drop_index_columns=True):
     """
     Retur X and Y
     """
@@ -103,7 +103,9 @@ def dataset(mode='train', onehot = True):
     Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
     y = df[Y_columns]
 
-    TO_DROP = ['KEY', 'KM', 'event_index']+Y_columns
+    TO_DROP = Y_columns
+    if drop_index_columns:
+        TO_DROP .extend(['KEY', 'KM', 'event_index'])
 
     df = df.drop(TO_DROP, axis=1)
 
