@@ -135,7 +135,7 @@ def time_windows_event(dataset_df, steps_behind=10, steps_after=3, step=15*60):
     # get the first time step of each event for each sensor
     start_events = dataset_df[dataset_df.event_index.notnull()]
     start_events = start_events[['KEY_2','event_index','DATETIME_UTC']].groupby(['KEY_2','event_index']).min()
-    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC']]
+    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC','event_index']]
     start_events['sample_id'] = start_events.index
     print('Total events found:', start_events.shape[0])
 
@@ -157,5 +157,7 @@ def time_windows_event(dataset_df, steps_behind=10, steps_after=3, step=15*60):
 
     # join to filter the desired rows, removing duplicated road-timestamps from the dataset (they will be duplicated again
     # after the merge, since a different time window is created for each event)
-    return dataset_df.drop_duplicates(['KEY_2','DATETIME_UTC']).merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
+    return dataset_df.drop('event_index', axis=1) \
+            .drop_duplicates(['KEY_2','DATETIME_UTC']) \
+            .merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
             .sort_values(['sample_id','DATETIME_UTC'])
