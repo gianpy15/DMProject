@@ -22,13 +22,12 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     #base = data.base_structure(mode)
     # - sensors
     sensors = data.sensors()
+    weather = data.weather()
     for mode in ['train','test']:
         # - speeds
-        s = data.speeds(mode).merge(sensors, how='left')
+        s = data.speeds(mode).merge(sensors, how='left').merge(weather, how='left')
         # - events
         e = data.events(mode)
-        # - weather
-        # ......
 
         # join dataframes
         print('Merging speeds and events...')

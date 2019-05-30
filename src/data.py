@@ -128,11 +128,12 @@ def dataset(mode='train', onehot = True, drop_na_events = False):
 
     return X, y
 
-
-
-
-
-
+def weather():
+    if _weather_df is None:
+        filepath = '{}/base_structure_df_weather.csv.gz'.format(_BASE_PATH_PREPROCESSED)
+        print(f'caching {filepath}')
+        _weather_df = pd.read_csv(filepath, engine='c')
+    return _weather_df
 
 def events_original(mode='train'):
     check_mode(mode)
