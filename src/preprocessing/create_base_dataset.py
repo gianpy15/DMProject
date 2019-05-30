@@ -22,13 +22,12 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     #base = data.base_structure(mode)
     # - sensors
     sensors = data.sensors()
+    weather = data.weather()
     for mode in ['train','test']:
         # - speeds
-        s = data.speeds(mode).merge(sensors, how='left')
+        s = data.speeds(mode).merge(sensors, how='left').merge(weather, how='left')
         # - events
         e = data.events(mode)
-        # - weather
-        # ......
 
         # join dataframes
         print('Merging speeds and events...')
@@ -39,11 +38,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df = utility.time_windows_event(joined_df, steps_behind=steps_behind_event, steps_after=steps_after_event)
 
         print('Aggregating events in samples...')
-        event_beginning_step = steps_behind_event+1
         joined_df = joined_df.round(4).groupby('sample_id').agg({
             'KEY':'first',
             'KM':'first',
-            'event_index':lambda x: x.values[event_beginning_step],
+            'event_index':lambda x: x.values[steps_behind_event],
             'DATETIME_UTC':list,
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
             'SPEED_SD':list,
@@ -53,8 +51,8 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             'EMERGENCY_LANE':'first',
             'LANES':'first',
             'ROAD_TYPE':'first',
-            'EVENT_DETAIL':lambda x: x.values[event_beginning_step],
-            'EVENT_TYPE':lambda x: x.values[event_beginning_step]
+            'EVENT_DETAIL':lambda x: x.values[steps_behind_event],
+            'EVENT_TYPE':lambda x: x.values[steps_behind_event]
         })
         
         # split the last m measure in different columns
@@ -71,7 +69,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         print('Splitting time steps into separate columns...')
         joined_df[['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                     'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
-                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=event_beginning_step-1)
+                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
 
         for col_name in ['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                             'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:

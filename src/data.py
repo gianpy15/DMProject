@@ -94,9 +94,9 @@ def base_dataset(mode='train'):
 
     return _base_dataset_df[mode]
 
-def dataset(mode='train', onehot = True, drop_na_events = False):
+def dataset(mode='train', onehot=True, drop_index_columns=True):
     """
-    Retur X and Y
+    Return X and Y
     """
     df = base_dataset(mode)
 
@@ -104,7 +104,9 @@ def dataset(mode='train', onehot = True, drop_na_events = False):
     Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
     y = df[Y_columns]
 
-    TO_DROP = ['KEY', 'KM', 'event_index']+Y_columns
+    TO_DROP = Y_columns
+    if drop_index_columns:
+        TO_DROP .extend(['KEY', 'KM', 'event_index'])
 
     df = df.drop(TO_DROP, axis=1)
 
@@ -120,19 +122,16 @@ def dataset(mode='train', onehot = True, drop_na_events = False):
             if col_type == object:
                 columns_to_onehot.append(col)
         X = pd.get_dummies(X,prefix='onehot', columns=columns_to_onehot)
-        if drop_na_events:
-            mask = X[[col_name for col_name in X.columns if col_name.startswith('onehot')]].sum(axis=1)==1
-            X = X[mask]
-    elif drop_na_events:
-        X = X[~pd.isna(X['EVENT_TYPE'])]
 
     return X, y
 
-
-
-
-
-
+def weather():
+    global _weather_df
+    if _weather_df is None:
+        filepath = '{}/base_structure_df_weather.csv.gz'.format(_BASE_PATH_PREPROCESSED)
+        print(f'caching {filepath}')
+        _weather_df = pd.read_csv(filepath, engine='c')
+    return _weather_df
 
 def events_original(mode='train'):
     check_mode(mode)

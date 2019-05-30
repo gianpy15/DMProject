@@ -117,7 +117,10 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     return df
 
 def merge_speed_events(speed_df, events_df):
+    """ Join the speed dataframe with the events (drops speed rows with NaN avg speed) """
     joined = speed_df.merge(events_df, how='left').reset_index()
+    print(f'merged: {joined.shape}')
+    print(f'unique: {joined.drop_duplicates(['KEY', 'KM', 'DATETIME_UTC']).shape}')
     out_event_range_mask = ~((joined.KM_START <= joined.KM) | (joined.KM_END >= joined.KM))
     joined.loc[out_event_range_mask, events_df.columns.drop(['KEY','DATETIME_UTC']).tolist()+['index']] = np.nan
     return joined.rename(columns={'index':'event_index'})
@@ -135,7 +138,7 @@ def time_windows_event(dataset_df, steps_behind=10, steps_after=3, step=15*60):
     # get the first time step of each event for each sensor
     start_events = dataset_df[dataset_df.event_index.notnull()]
     start_events = start_events[['KEY_2','event_index','DATETIME_UTC']].groupby(['KEY_2','event_index']).min()
-    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC']]
+    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC','event_index']]
     start_events['sample_id'] = start_events.index
     print('Total events found:', start_events.shape[0])
 
@@ -157,5 +160,7 @@ def time_windows_event(dataset_df, steps_behind=10, steps_after=3, step=15*60):
 
     # join to filter the desired rows, removing duplicated road-timestamps from the dataset (they will be duplicated again
     # after the merge, since a different time window is created for each event)
-    return dataset_df.drop_duplicates(['KEY_2','DATETIME_UTC']).merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
+    return dataset_df.drop('event_index', axis=1) \
+            .drop_duplicates(['KEY_2','DATETIME_UTC']) \
+            .merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
             .sort_values(['sample_id','DATETIME_UTC'])
