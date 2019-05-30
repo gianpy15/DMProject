@@ -43,6 +43,9 @@ def preprocess(km_influence_before=5, km_influence_after=2):
         events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
         events_df['DATETIME_UTC'] = pd.to_datetime(events_df['DATETIME_UTC'], unit='s')
 
+        # put into event detail a unique value when is NaN
+        events_df.EVENT_DETAIL = events_df.EVENT_DETAIL.fillna('Unknown')  
+
         # save the df
         preprocessing_folder = 'resources/dataset/preprocessed'
         path = os.path.join(preprocessing_folder, filename.format(mode))

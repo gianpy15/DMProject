@@ -85,6 +85,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                                     'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
 
         if mode == 'train':
+            pass
             # take random validation rows
             pass
             # random_indices = random.shuffle(joined_df.index)

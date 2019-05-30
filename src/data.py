@@ -19,6 +19,7 @@ _events_df = {'train': None, 'test': None}
 _events_df_preprocessed = {'train': None, 'test': None}
 
 _speeds_df = {'train': None, 'test': None}
+_speeds_df_imputed = {'train': None, 'test': None}
 _weather_df = {'train': None, 'test': None}
 _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
@@ -85,7 +86,7 @@ def base_dataset(mode='train'):
         if not os.path.isfile(base_dataset_path):
             print('base dataset not found... creating it...')
             create_base_dataset.create_base_dataset(steps_behind_event=10)
-    
+
         print('caching base dataset {}'.format(mode))
         _base_dataset_df[mode] = pd.read_csv(base_dataset_path, parse_dates=True)
         #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
@@ -95,7 +96,7 @@ def base_dataset(mode='train'):
 
 def dataset(mode='train', onehot=True, drop_index_columns=True):
     """
-    Retur X and Y
+    Return X and Y
     """
     df = base_dataset(mode)
 
@@ -136,7 +137,7 @@ def events_original(mode='train'):
         filepath = f'{_BASE_PATH_ORIGINALS}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
         _events_df[mode] = pd.read_csv(filepath, engine='c')
-    
+
     return _events_df[mode]
 
 def events(mode='train'):
@@ -147,11 +148,14 @@ def events(mode='train'):
         _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c', index_col=0)
         _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
                                                 columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
-    
+
     return _events_df_preprocessed[mode]
 
 
-def speeds(mode='train'):
+def speeds_original(mode='train'):
+    """
+        WARNING previous called speeds
+    """
     check_mode(mode)
     if _speeds_df[mode] is None:
         filepath = f'{_BASE_PATH_ORIGINALS}/speeds_{mode}.csv.gz'
@@ -161,6 +165,20 @@ def speeds(mode='train'):
 
     return _speeds_df[mode]
 
+def speeds(mode='train', imputed_method='time'):
+    """
+        imputed_method: string
+        name of the method used for imputing speed during the preprocessing step of preprocessing/speeds.py
+    """
+    check_mode(mode)
+    if _speeds_df_imputed[mode] is None:
+        filepath = f'{_BASE_PATH_PREPROCESSED}/speeds_{mode}_imputed_{imputed_method}.csv.gz'
+        print(f'caching {filepath}')
+        _speeds_df_imputed[mode] = pd.read_csv(filepath, engine='c')
+        _speeds_df_imputed[mode] = utility.df_to_datetime(_speeds_df_imputed[mode], columns=['DATETIME_UTC'])
+
+    return _speeds_df_imputed[mode]
+
 
 def weather_original(mode='train'):
     check_mode(mode)
@@ -169,10 +187,8 @@ def weather_original(mode='train'):
         print(f'caching {filepath}')
         _weather_df[mode] = pd.read_csv(filepath, engine='c')
         _weather_df[mode] = utility.df_to_datetime(_weather_df[mode], columns=['DATETIME_UTC'])
-    
+
     return _weather_df[mode]
-
-
 
 def sensors_original():
     global _sensors_df
