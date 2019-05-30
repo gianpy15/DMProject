@@ -20,7 +20,7 @@ _events_df_preprocessed = {'train': None, 'test': None}
 
 _speeds_df = {'train': None, 'test': None}
 _speeds_df_imputed = {'train': None, 'test': None}
-_weather_df = {'train': None, 'test': None}
+_weather_df = None
 _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
 _base_structure_hours_df = None
