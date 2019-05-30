@@ -9,7 +9,7 @@ import src.data as data
 import src.utility as utility
 
 
-def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2):
+def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2, speed_imputed=True):
     """
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
@@ -25,7 +25,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     weather = data.weather()
     for mode in ['train','test']:
         # - speeds
-        s = data.speeds(mode).merge(sensors, how='left').merge(weather, how='left')
+        if speed_imputed:
+            s = data.speeds(mode).merge(sensors, how='left').merge(weather, how='left')
+        else:
+            s = data.speeds_original(mode).merge(sensors, how='left').merge(weather, how='left')
         # - events
         e = data.events(mode)
 
