@@ -19,7 +19,7 @@ def setup_parser():
     return _parser
 
 
-def preprocess(infer_size: int = 3, algorythm: str = 'time', data: str = 'train'):
+def preprocess(infer_size: int = 3, algorithm: str = 'time', data: str = 'train'):
     speeds_df = {}
     dsets = ['train', 'test'] if data == 'all' else [data]
     print('Reading datasets')
@@ -40,29 +40,34 @@ def preprocess(infer_size: int = 3, algorythm: str = 'time', data: str = 'train'
         max_time = max_time // (10 ** 9)
         datetimes = np.arange(min_time, max_time, 15 * 60)
         datetimes = datetimes * (10 ** 9)
+        print(f'total datetimes: {len(datetimes)}')
 
         datetimes = pd.to_datetime(datetimes)
         datetimes = pd.DataFrame({DATETIME: datetimes})
 
         datetimes['key'] = 0
         sensors = sensors_df[[KEY, KM]].drop_duplicates()
-        print(sensors.shape)
+        print(f"total sensors: {len(sensors)}, i'm expecting max {len(datetimes) * len(sensors)} samples")
         sensors['key'] = 0
         skeleton_train_df = pd.merge(sensors, datetimes, on='key')[[KEY, KM, DATETIME]].sort_values([KEY, KM, DATETIME])
         speeds = speeds_df[s]
         speeds[DATETIME] = pd.to_datetime(speeds[DATETIME])
         skeleton = skeleton_train_df[[KEY, KM, DATETIME]]
+        print('Merging dataset')
         complete_df = pd.merge(skeleton, speeds, on=[KEY, KM, DATETIME], how='left')[
             [KEY, KM, DATETIME, SPEED_AVG, SPEED_SD, SPEED_MIN, SPEED_MAX, N_CARS]]
-
+        print('Done')
+        print(f'Imputing missing values with algorithm {algorithm}')
         complete_df['IMPUTED'] = complete_df.isnull().any(axis=1)
         complete_df[complete_df['IMPUTED'] == True].sort_values([DATETIME]).head(2)
 
         complete_df[DATETIME] = pd.to_datetime(complete_df[DATETIME])
         complete_df = complete_df.set_index([DATETIME])
 
-        complete_df = complete_df.interpolate(method=algorythm, limit=infer_size, limit_area='inside')
+        complete_df = complete_df.interpolate(method=algorithm, limit=infer_size, limit_area='inside')
         print('Done')
+        complete_df.dropna(subset=[SPEED_AVG], inplace=True)
+        print(f'final DataFrame shape: {complete_df.shape}')
         print('Saving CSV')
         complete_df.to_csv(resources_path('dataset', 'preprocessed', 'speeds_{}_imputed_time.csv.gz'.format(s)))
         print('Done')

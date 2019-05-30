@@ -5,7 +5,7 @@ tqdm.pandas()
 from src.algorithms.multi_output_regressor_wrapper import MultiOutputRegressorWrapper
 import pandas as pd
 import numpy as np
-
+from sklearn.model_selection import train_test_split
 import datetime
 from skopt.space import Real, Integer, Categorical
 from src.utility import reduce_mem_usage
@@ -26,20 +26,14 @@ class lightGBM():
     def set_params(self):
         pass
 
+    def fit(self, X, y):
 
-    def fit(self, X, y, X_val=None, y_val = None):
-        _VALIDATION = False
-
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
         # initialize the model
         self.model = lgb.LGBMRegressor(**self.params_dict)
 
-        if (X_val is not None) and (y_val is not None):
-            # TODO IS NOT COMPLETED
-            print('Validation detected...')
-            self.model.fit(X, y, eval_set=[(X_val, y_val)], verbose = True)
-        else:
-            print('Train whitout validation...')
-            self.model.fit(X, y, verbose=True)
+        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric='regression_l1', verbose=1,
+                           eval_names='validation_set')
 
     def validate(self):
     #TODO: DO NOT DELETE IS USEFULL FOR FINISH THE FIT METHOD IN CASE OF VALIDATION
@@ -106,8 +100,6 @@ if __name__ == '__main__':
     X, y = data.dataset('train')
     X = X.fillna(-1)
     y = y.fillna(-1)
-    #X = reduce_mem_usage(X)
-    #y = reduce_mem_usage(y)
     model = lightGBM(mode='train', params_dict=params_dict)
     model_wrapper = MultiOutputRegressorWrapper(model, X, y)
     model_wrapper.fit()

@@ -119,6 +119,8 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
 def merge_speed_events(speed_df, events_df):
     """ Join the speed dataframe with the events (drops speed rows with NaN avg speed) """
     joined = speed_df.merge(events_df, how='left').reset_index()
+    print(f'merged: {joined.shape}')
+    print(f'unique: {joined.drop_duplicates(['KEY', 'KM', 'DATETIME_UTC']).shape}')
     out_event_range_mask = ~((joined.KM_START <= joined.KM) | (joined.KM_END >= joined.KM))
     joined.loc[out_event_range_mask, events_df.columns.drop(['KEY','DATETIME_UTC']).tolist()+['index']] = np.nan
     return joined.rename(columns={'index':'event_index'})
