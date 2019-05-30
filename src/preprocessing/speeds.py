@@ -64,7 +64,7 @@ def preprocess(infer_size: int = 3, algorythm: str = 'time', data: str = 'train'
         complete_df = complete_df.interpolate(method=algorythm, limit=infer_size, limit_area='inside')
         print('Done')
         print('Saving CSV')
-        complete_df.to_csv(resources_path('dataset', 'preprocessed', 'speeds_{}_imputed_time.csv.gz'.format(s)))
+        complete_df.to_csv(resources_path('dataset', 'preprocessed', 'speeds_{}_imputed_time.csv.gz'.format(s)), compression='gzip')
         print('Done')
 
 
