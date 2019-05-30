@@ -129,6 +129,7 @@ def dataset(mode='train', onehot = True, drop_na_events = False):
     return X, y
 
 def weather():
+    global _weather_df
     if _weather_df is None:
         filepath = '{}/base_structure_df_weather.csv.gz'.format(_BASE_PATH_PREPROCESSED)
         print(f'caching {filepath}')
