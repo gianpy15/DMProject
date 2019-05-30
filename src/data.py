@@ -130,7 +130,7 @@ def weather():
     if _weather_df is None:
         filepath = '{}/base_structure_df_weather.csv.gz'.format(_BASE_PATH_PREPROCESSED)
         print(f'caching {filepath}')
-        _weather_df = pd.read_csv(filepath, engine='c')
+        _weather_df = pd.read_csv(filepath, engine='c', parse_dates=['DATETIME_UTC'])
     return _weather_df
 
 def events_original(mode='train'):
