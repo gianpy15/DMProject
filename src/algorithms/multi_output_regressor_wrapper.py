@@ -23,7 +23,7 @@ class MultiOutputRegressionChainWrapper():
         self.model = model
         self.X = X
         self.y = y
-        self.multioutputregressor = RegressorChain(self.model)
+        self.multioutputregressor = RegressorChain(self.model, cv=2)
 
     def fit(self):
         print('starting the fit')
