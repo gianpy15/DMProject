@@ -33,6 +33,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # - weather
         # ......
         print('Done')
+        utility
         print_memory_usage()
         
         print('Merging speeds events')

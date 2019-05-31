@@ -34,7 +34,7 @@ def discretize_timestamp(df, col_name, step=15*60, floor=True, rename_col=None):
         times_serie = pd.to_datetime(unix_timestamps - remainders + step, unit='s')
     else:
         times_serie = pd.to_datetime(unix_timestamps - remainders, unit='s')
-    
+
     if isinstance(rename_col, str):
         df[rename_col] = times_serie
     else:
@@ -49,12 +49,11 @@ def reduce_mem_usage(df):
     :return:
     """
     start_mem = df.memory_usage().sum() / 1024 ** 2
-    print('Memory usage of dataframe is {:.2f} MB'.format(start_mem))
 
     for col in df.columns:
         col_type = df[col].dtype
 
-        if col_type != object and col_type != Timestamp:
+        if col_type != object and col_type != "datetime64[ns]":
             c_min = df[col].min()
             c_max = df[col].max()
             if str(col_type)[:3] == 'int':
@@ -73,11 +72,10 @@ def reduce_mem_usage(df):
                     df[col] = df[col].astype(np.float32)
                 else:
                     df[col] = df[col].astype(np.float64)
-        else:
+        elif col_type == object:
             df[col] = df[col].astype('category')
 
     end_mem = df.memory_usage().sum() / 1024 ** 2
-    print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
     print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
 
     return df
@@ -107,7 +105,7 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     # build the time range from start to end at steps of 900 seconds (15 minutes)
     df['DATETIME_UTC'] = df.progress_apply(lambda x:
                                     np.arange(x[col_ts_start], x[col_ts_end] + 900, 900), axis=1)
-    
+
     # expand the list of timestamps in the time_range
     df = pd.DataFrame({
         col: np.repeat(df[col].values, df['step_duration'])
@@ -117,44 +115,48 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     return df
 
 def merge_speed_events(speed_df, events_df):
-    joined = speed_df.merge(events_df, how='left')
-    out_event_range_mask = ((joined.KM < joined.KM_START) | (joined.KM > joined.KM_END))
-    joined.loc[out_event_range_mask, events_df.columns.drop(['KEY','DATETIME_UTC'])] = np.nan
+    """ Join the speed dataframe with the events (drops speed rows with NaN avg speed) """
+    joined = speed_df.merge(events_df, how='left').reset_index()
+    out_event_range_mask = ~((joined.KM_START <= joined.KM) | (joined.KM_END >= joined.KM))
+    joined.loc[out_event_range_mask, events_df.columns.drop(['KEY','DATETIME_UTC']).tolist()+['index']] = np.nan
     return joined.rename(columns={'index':'event_index'})
 
 
 def time_windows_event(dataset_df, steps_behind=10, steps_after=3, step=15*60):
     """ Filter the dataset to get a window containing n time steps before the beginning
         of the event and m time steps after the end for each involved sensor
-        
+
         dataset_df (df): dataset dataframe
         steps_behind (int): n (not including the event start)
         steps_after (int): m (not including the event start)
     """
+    tqdm.pandas()
     # get the first time step of each event for each sensor
     start_events = dataset_df[dataset_df.event_index.notnull()]
     start_events = start_events[['KEY_2','event_index','DATETIME_UTC']].groupby(['KEY_2','event_index']).min()
-    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC']]
+    start_events = start_events.reset_index()[['KEY_2','DATETIME_UTC','event_index']]
     start_events['sample_id'] = start_events.index
     print('Total events found:', start_events.shape[0])
 
     start_delta = datetime.timedelta(seconds=step*steps_behind)
     end_delta = datetime.timedelta(seconds=step*steps_after)
-    
+
     # construct the time window for each event beginning
-    start_events['window'] = start_events.apply(lambda x:
+    start_events['window'] = start_events.progress_apply(lambda x:
                                     list(pd.date_range(start=x.DATETIME_UTC - start_delta,
                                                        end=x.DATETIME_UTC + end_delta,
                                                        freq=f'{step}s')), axis=1)
     start_events = start_events.drop('DATETIME_UTC', axis=1)
-    
+
     # build the filter
     filter_df = pd.DataFrame({ col: np.repeat(start_events[col].values, start_events['window'].str.len())
         for col in start_events.columns.drop('window')
     }).assign(**{'DATETIME_UTC': np.concatenate(start_events['window'].values)})
     print('Filter size:', filter_df.shape[0])
-    
+
     # join to filter the desired rows, removing duplicated road-timestamps from the dataset (they will be duplicated again
     # after the merge, since a different time window is created for each event)
-    return dataset_df.drop_duplicates(['KEY_2','DATETIME_UTC']).merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
-            .sort_values(['KEY','KM','DATETIME_UTC'])
+    return dataset_df.drop('event_index', axis=1) \
+            .drop_duplicates(['KEY_2','DATETIME_UTC']) \
+            .merge(filter_df, how='right', on=['KEY_2','DATETIME_UTC']) \
+            .sort_values(['sample_id','DATETIME_UTC'])
