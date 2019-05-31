@@ -1,5 +1,7 @@
 import os
 import sys
+import os, psutil
+import gc
 sys.path.append(os.getcwd())
 
 import pandas as pd
@@ -23,15 +25,27 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     # - sensors
     sensors = data.sensors()
     for mode in ['train','test']:
+        print('Reading datasets..')
         # - speeds
-        s = data.speeds(mode).merge(sensors, how='left')
+        s = utility.reduce_mem_usage(data.speeds(mode).merge(sensors, how='left'))
         # - events
-        e = data.events(mode)
+        e = utility.reduce_mem_usage(data.events(mode))
         # - weather
         # ......
-
+        print('Done')
+        print_memory_usage()
+        
+        print('Merging speeds events')
         # join dataframes
         joined_df = utility.merge_speed_events(s, e)
+        print('Done')
+        print_memory_usage()
+        print('Deleting dataframes')
+        del s
+        del e
+        gc.collect()
+        print('Done')
+        print_memory_usage()
 
         # create the time windows for each event
         joined_df = utility.time_windows_event(joined_df, steps_behind=steps_behind_event, steps_after=steps_after_event)
@@ -98,6 +112,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df.to_csv(filepath, index=False, compression='gzip')
         print('Done\n')    
         del joined_df
+        
+def print_memory_usage():
+    process = psutil.Process(os.getpid())
+    print(f'Current memory usage: {int(process.memory_info().rss / float(2 ** 20))}MB')
 
 
 if __name__ == '__main__':
