@@ -61,7 +61,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             'DISTANCE': list,
         })
         
-        # split the last m measure in different columns
+        # split the last m measures in different columns
         def split_prediction_fields(row, event_beginning_step):
             return pd.Series((
                     row.DATETIME_UTC[:event_beginning_step], row.DATETIME_UTC[event_beginning_step:], 
@@ -91,7 +91,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
                                     'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y',
-                                    'WEATHER', 'DISTANCE'], axis=1)
+                                    'WEATHER', 'WEATHER_Y',	'DISTANCE', 'DISTANCE_Y'], axis=1)
 
         if mode == 'train':
             pass
