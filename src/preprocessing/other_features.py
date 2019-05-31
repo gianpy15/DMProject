@@ -36,3 +36,17 @@ def avg_speed_for_street() -> pd.DataFrame:
     te = data.speeds_original('test')
     df = pd.concat([tr, te])
     return df[['KEY', 'SPEED_AVG']].groupby(['KEY']).mean().reset_index()
+
+def avg_speed_for_roadtype_event() -> pd.DataFrame:
+    speeds = utils.reduce_mem_usage(data.speeds_original())
+    events = utils.reduce_mem_usage(data.events())
+    sensors = utils.reduce_mem_usage(data.sensors())
+    merged = merge_speed_events(speeds, events)
+    merged = pd.merge(merged, sensors, left_on=[KEY, KM], right_on=[KEY, KM])
+    merged = merged[[EVENT_TYPE, SPEED_AVG, ROAD_TYPE]].dropna().groupby([EVENT_TYPE, ROAD_TYPE])
+    merged = merged.agg(['mean', 'std'])
+    merged['AVG_SPEED_EVENT'] = merged[SPEED_AVG]['mean']
+    merged['STD_SPEED_EVENT'] = merged[SPEED_AVG]['std']
+    merged.drop([SPEED_AVG], axis=1, inplace=True)
+    merged.reset_index(inplace=True)
+    return merged

@@ -27,7 +27,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     for mode in ['train','test']:
         print('Reading datasets..')
         # - speeds
-        s = utility.reduce_mem_usage(data.speeds(mode).merge(sensors, how='left'))
+        s = utility.reduce_mem_usage(data.speeds_original(mode).merge(sensors, how='left'))
         # - events
         e = utility.reduce_mem_usage(data.events(mode))
         # - weather

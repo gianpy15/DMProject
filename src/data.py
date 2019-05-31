@@ -5,6 +5,7 @@ from time import time
 import os
 import pandas as pd
 import src.utility as utility
+import gc
 
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
@@ -31,6 +32,32 @@ def flush_cache():
     _events_df_preprocessed, _speeds_df, _speeds_df_imputed, _weather_df, _base_structure_df,_base_dataset_df,\
     _base_structure_hours_df
 
+    del _distances_df_original
+    del _distances_df_preprocessed
+    del _sensors_df
+    del _sensors_df_preprocessed
+    del _events_df['train']
+    del _events_df['test']
+    del _events_df
+    del _events_df_preprocessed['train']
+    del _events_df_preprocessed['test']
+    del _events_df_preprocessed
+    
+    del _speeds_df['train']
+    del _speeds_df['test']
+    del _speeds_df
+    del _speeds_df_imputed['train']
+    del _speeds_df_imputed['test']
+    del _speeds_df_imputed
+    del _weather_df
+    del _base_structure_df
+    del _base_dataset_df['train']
+    del _base_dataset_df['test']
+    del _base_dataset_df
+    del _base_structure_hours_df
+    gc.collect()
+    
+    # initialize variable for caching
     _distances_df_original = None
     _distances_df_preprocessed = None
     _sensors_df = None
