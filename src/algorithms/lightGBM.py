@@ -3,6 +3,7 @@ from tqdm import tqdm
 import src.data as data
 tqdm.pandas()
 from src.algorithms.multi_output_regressor_wrapper import MultiOutputRegressorWrapper
+from src.algorithms.multi_output_regressor_wrapper import MultiOutputRegressionChainWrapper
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -11,13 +12,14 @@ from skopt.space import Real, Integer, Categorical
 from src.utility import reduce_mem_usage
 
 
+
 class lightGBM():
 
     def __init__(self, mode, params_dict):
         self.mode = mode
         self.params_dict = params_dict
         self.eval_res = {}
-        self.model = None
+        self.model = lgb.LGBMRegressor(**self.params_dict)
 
     def get_params(self, deep):
         return {'params_dict': self.params_dict,
@@ -28,9 +30,10 @@ class lightGBM():
 
     def fit(self, X, y):
 
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
-        # initialize the model
-        self.model = lgb.LGBMRegressor(**self.params_dict)
+        X=X [y>0]
+        y= np.log(y[y>0])
+
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, shuffle=False)
 
         self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric='regression_l1', verbose=1,
                            eval_names='validation_set')
@@ -75,18 +78,18 @@ if __name__ == '__main__':
     params_dict = {
         'objective': 'regression_l1',
         'boosting_type':'gbdt',
-        'num_leaves': 31,
+        'num_leaves': 64,
         'max_depth': -1,
-        'learning_rate': 0.1,
-        'n_estimators': 100,
+        'learning_rate': 0.01,
+        'n_estimators': 2000,
         'subsample_for_bin': 200000,
         'class_weights': None,
         'min_split_gain': 0.0,
         'min_child_weight': 0.001,
-        'min_child_samples': 20,
-        'subsample':1.0,
+        'min_child_samples': 1,
+        'subsample': 1.0,
         'subsample_freq': 0,
-        'colsample_bytree':1.0,
+        'colsample_bytree': 1,
         'reg_alpha': 0.0,
         'reg_lambda': 0.0,
         'random_state': None,
@@ -98,14 +101,16 @@ if __name__ == '__main__':
     }
 
     X, y = data.dataset('train')
-    X = X.fillna(-1)
-    y = y.fillna(-1)
+    X = X.fillna(0)
+    y = y.fillna(0)
     model = lightGBM(mode='train', params_dict=params_dict)
     model_wrapper = MultiOutputRegressorWrapper(model, X, y)
     model_wrapper.fit()
-    a = model_wrapper.predict_train()
-    df = pd.DataFrame(np.concatenate([a, y], axis=1))
-    y = 7
+
+
+
+
+
 
 
 
