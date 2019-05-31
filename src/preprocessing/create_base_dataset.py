@@ -9,7 +9,7 @@ import src.data as data
 import src.utility as utility
 
 
-def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2):
+def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2, speed_imputed=True):
     """
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
@@ -25,8 +25,12 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     weather = data.weather()
     for mode in ['train','test']:
         # - speeds
-        s = data.speeds(mode).merge(sensors, how='left').merge(weather, how='left')
+        if speed_imputed:
+            s = data.speeds(mode).merge(sensors, how='left')
+        else:
+            s = data.speeds_original(mode).merge(sensors, how='left')
         # - events
+        s = s.merge(weather, how='left')
         e = data.events(mode)
 
         # join dataframes
@@ -52,10 +56,12 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             'LANES':'first',
             'ROAD_TYPE':'first',
             'EVENT_DETAIL':lambda x: x.values[steps_behind_event],
-            'EVENT_TYPE':lambda x: x.values[steps_behind_event]
+            'EVENT_TYPE':lambda x: x.values[steps_behind_event],
+            'WEATHER': list,
+            'DISTANCE': list,
         })
         
-        # split the last m measure in different columns
+        # split the last m measures in different columns
         def split_prediction_fields(row, event_beginning_step):
             return pd.Series((
                     row.DATETIME_UTC[:event_beginning_step], row.DATETIME_UTC[event_beginning_step:], 
@@ -63,16 +69,19 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                     row.SPEED_SD[:event_beginning_step],     row.SPEED_SD[event_beginning_step:],
                     row.SPEED_MAX[:event_beginning_step],    row.SPEED_MAX[event_beginning_step:],
                     row.SPEED_MIN[:event_beginning_step],    row.SPEED_MIN[event_beginning_step:],
-                    row.N_VEHICLES[:event_beginning_step],   row.N_VEHICLES[event_beginning_step:]
+                    row.N_VEHICLES[:event_beginning_step],   row.N_VEHICLES[event_beginning_step:],
+                    row.WEATHER[:event_beginning_step],      row.WEATHER[event_beginning_step:],
+                    row.DISTANCE[:event_beginning_step],     row.DISTANCE[event_beginning_step:],
             ))
         
         print('Splitting time steps into separate columns...')
         joined_df[['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
                     'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
-                    'N_VEHICLES', 'N_VEHICLES_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
+                    'N_VEHICLES', 'N_VEHICLES_Y', 'WEATHER', 'WEATHER_Y', 'DISTANCE', 'DISTANCE_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
 
         for col_name in ['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
-                            'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y']:
+                            'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y',
+                            'WEATHER', 'WEATHER_Y', 'DISTANCE', 'DISTANCE_Y']:
             if col_name.upper().endswith('_Y'):
                 new_cols = ['{}_{}'.format(col_name, i) for i in range(0, steps_after_event+1)]
             else:
@@ -81,7 +90,8 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
         joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
-                                    'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y'], axis=1)
+                                    'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y',
+                                    'WEATHER', 'WEATHER_Y',	'DISTANCE', 'DISTANCE_Y'], axis=1)
 
         if mode == 'train':
             pass
