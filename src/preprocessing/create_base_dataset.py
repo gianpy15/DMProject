@@ -33,7 +33,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # - weather
         # ......
         print('Done')
-        utility
+        data.flush_cache()
         print_memory_usage()
         
         print('Merging speeds events')
@@ -47,10 +47,13 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         gc.collect()
         print('Done')
         print_memory_usage()
-
+        
+        print('\nCreating time window for events...')
         # create the time windows for each event
         joined_df = utility.time_windows_event(joined_df, steps_behind=steps_behind_event, steps_after=steps_after_event)
-
+        print('Done')
+        print_memory_usage()
+        
         event_beginning_step = steps_behind_event+1
         joined_df = joined_df.round(4).groupby('sample_id').agg({
             'KEY':'first',
