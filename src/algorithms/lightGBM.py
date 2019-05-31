@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 import datetime
 from skopt.space import Real, Integer, Categorical
 from src.utility import reduce_mem_usage
+import matplotlib.pyplot as plt
 
 
 
@@ -30,13 +31,16 @@ class lightGBM():
 
     def fit(self, X, y):
 
-        X=X [y>0]
-        y= np.log(y[y>0])
+        X = X[y > 0]
+        y = y[y > 0]
 
         X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, shuffle=False)
 
         self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric='regression_l1', verbose=1,
                            eval_names='validation_set')
+        a = lgb.plot_importance(self.model.booster_)
+        plt.subplot(a)
+        plt.show()
 
     def validate(self):
     #TODO: DO NOT DELETE IS USEFULL FOR FINISH THE FIT METHOD IN CASE OF VALIDATION
@@ -78,14 +82,14 @@ if __name__ == '__main__':
     params_dict = {
         'objective': 'regression_l1',
         'boosting_type':'gbdt',
-        'num_leaves': 64,
+        'num_leaves': 21,
         'max_depth': -1,
         'learning_rate': 0.01,
-        'n_estimators': 2000,
+        'n_estimators': 1000,
         'subsample_for_bin': 200000,
         'class_weights': None,
-        'min_split_gain': 0.0,
-        'min_child_weight': 0.001,
+        'min_split_gain': 0.001,
+        'min_child_weight': 0.0,
         'min_child_samples': 1,
         'subsample': 1.0,
         'subsample_freq': 0,
@@ -104,7 +108,7 @@ if __name__ == '__main__':
     X = X.fillna(0)
     y = y.fillna(0)
     model = lightGBM(mode='train', params_dict=params_dict)
-    model_wrapper = MultiOutputRegressorWrapper(model, X, y)
+    model_wrapper = MultiOutputRegressionChainWrapper(model, X, y)
     model_wrapper.fit()
 
 
