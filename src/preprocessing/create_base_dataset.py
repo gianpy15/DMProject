@@ -15,6 +15,8 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
     """
+    print(f'Creating base dataset with timewindows ({steps_behind_event}, {steps_after_event})')
+
     # check if the folder exsist, otherwise create it
     utility.check_folder(data._BASE_PATH_PREPROCESSED)
 

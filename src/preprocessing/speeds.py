@@ -20,6 +20,7 @@ def setup_parser():
 
 
 def preprocess(infer_size: int = 3, algorithm: str = 'time', data: str = 'train'):
+    print('Preprocessing speeds...')
     speeds_df = {}
     dsets = ['train', 'test'] if data == 'all' else [data]
     print('Reading datasets')
