@@ -35,6 +35,12 @@ if __name__ == "__main__":
 
     X, Y = data.dataset(onehot=False, drop_index_columns=True)
 
+    # add features
+    import src.preprocessing.other_features as feat
+    avg_speed_road_event = feat.avg_speed_for_roadtype_event()
+    X = X.merge(avg_speed_road_event, how='left', on=['EVENT_TYPE','ROAD_TYPE'])
+    del avg_speed_road_event
+
     X.fillna(0, inplace=True)
 
     weather_cols = [f'WEATHER_{i}' for i in range(-10,0)]
@@ -44,10 +50,10 @@ if __name__ == "__main__":
         'X': X,
         'loss_function': 'MAE',
         'eval_metric': 'MAE',
-        'n_estimators':20,
+        'n_estimators':2000,
         'depth':6,
         'learning_rate':1,
-        'early_stopping_rounds': 15,
+        'early_stopping_rounds': 100,
         'cat_features': categorical_cols
     })
 
@@ -60,7 +66,7 @@ if __name__ == "__main__":
         y_pred = model.predict(X_test[mask_test])
         return mean_absolute_error(y_test[mask_test], y_pred)
 
-
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
     mae = evaluate(X_test, y_test)
+    print()
     print(mae)

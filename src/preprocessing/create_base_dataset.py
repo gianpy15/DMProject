@@ -109,6 +109,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df.dropna(how='all', subset=[f'SPEED_AVG_{i}' for i in range(-steps_behind_event, 0)], inplace=True)
         print('Dataset shape reduced to:', joined_df.shape)
 
+        # cast to int some columns
+        joined_df = joined_df.astype({'EMERGENCY_LANE': 'int', 'LANES': 'int',
+                                        'ROAD_TYPE': 'int', 'EVENT_DETAIL': 'int'})
+
         """
         if mode == 'train':
             # take random validation rows
