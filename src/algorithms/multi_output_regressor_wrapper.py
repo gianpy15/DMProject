@@ -1,21 +1,30 @@
 from sklearn.multioutput import MultiOutputRegressor
+from sklearn.multioutput import RegressorChain
 
 class MultiOutputRegressorWrapper():
 
-    def __init__(self, model, X, y, X_val=None, y_val=None):
+    def __init__(self, model, X, y):
 
         self.model = model
         self.X = X
         self.y = y
-        self.multioutputregressor = None
-        self.X_val = X_val
-        self.y_val = y_val
+        self.multioutputregressor = MultiOutputRegressor(self.model)
 
     def fit(self):
-        self.multioutputregressor = MultiOutputRegressor(self.model)
         print('starting the fit')
         self.multioutputregressor.fit(self.X, self.y)
 
-    def predict_train(self):
-        pred = self.multioutputregressor.predict(X=self.X)
+    def predict(self, X):
+        pred = self.multioutputregressor.predict(X=X)
         return pred
+
+class MultiOutputRegressionChainWrapper():
+    def __init__(self, model, X, y):
+        self.model = model
+        self.X = X
+        self.y = y
+        self.multioutputregressor = RegressorChain(self.model, cv=2)
+
+    def fit(self):
+        print('starting the fit')
+        self.multioutputregressor.fit(self.X, self.y)
