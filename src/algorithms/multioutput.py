@@ -319,8 +319,7 @@ class MultiOutputEstimator(six.with_metaclass(ABCMeta, BaseEstimator,
         if not hasattr(self.estimator, "predict"):
             raise ValueError("The base estimator should implement a predict method")
 
-        X = check_array(X, accept_sparse=True,
-                        dtype="object")
+        X = check_array(X, accept_sparse=True, dtype="object")
 
         y = Parallel(n_jobs=self.n_jobs)(
             delayed(parallel_helper)(e, 'predict', X)
@@ -522,10 +521,10 @@ class _BaseChain(six.with_metaclass(ABCMeta, BaseEstimator)):
         -------
         self : object
         """
-        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True)
+        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True, dtype="object")
 
         random_state = check_random_state(self.random_state)
-        check_array(X, accept_sparse=True)
+        check_array(X, accept_sparse=True, dtype="object")
         self.order_ = self.order
         if self.order_ is None:
             self.order_ = np.array(range(Y.shape[1]))
@@ -585,7 +584,7 @@ class _BaseChain(six.with_metaclass(ABCMeta, BaseEstimator)):
             The predicted values.
 
         """
-        X = check_array(X, accept_sparse=True)
+        X = check_array(X, accept_sparse=True, dtype="object")
         Y_pred_chain = np.zeros((X.shape[0], len(self.estimators_)))
         for chain_idx, estimator in enumerate(self.estimators_):
             previous_predictions = Y_pred_chain[:, :chain_idx]
@@ -712,7 +711,7 @@ class ClassifierChain(_BaseChain, ClassifierMixin, MetaEstimatorMixin):
         -------
         Y_prob : array-like, shape (n_samples, n_classes)
         """
-        X = check_array(X, accept_sparse=True)
+        X = check_array(X, accept_sparse=True, dtype="object")
         Y_prob_chain = np.zeros((X.shape[0], len(self.estimators_)))
         Y_pred_chain = np.zeros((X.shape[0], len(self.estimators_)))
         for chain_idx, estimator in enumerate(self.estimators_):

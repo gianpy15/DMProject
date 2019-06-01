@@ -25,6 +25,25 @@ _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
 _base_structure_hours_df = None
 
+def flush_cache():
+    print('gianpy svuotooooo tutto!')
+    global _distances_df_original,_distances_df_preprocessed,_sensors_df,_sensors_df_preprocessed,_events_df,\
+    _events_df_preprocessed, _speeds_df, _speeds_df_imputed, _weather_df, _base_structure_df,_base_dataset_df,\
+    _base_structure_hours_df
+
+    _distances_df_original = None
+    _distances_df_preprocessed = None
+    _sensors_df = None
+    _sensors_df_preprocessed = None
+    _events_df = {'train': None, 'test': None}
+    _events_df_preprocessed = {'train': None, 'test': None}
+
+    _speeds_df = {'train': None, 'test': None}
+    _speeds_df_imputed = {'train': None, 'test': None}
+    _weather_df = None
+    _base_structure_df = None
+    _base_dataset_df = {'train': None, 'test': None}
+    _base_structure_hours_df = None
 
 def check_mode(mode):
     assert mode in ['train', 'test']
@@ -118,11 +137,11 @@ def dataset(mode='train', onehot=True, drop_index_columns=True):
         print('performing onehot')
         columns_to_onehot = []
         for col in X.columns:
+            print(col)
             col_type = df[col].dtype
             if col_type == object:
                 columns_to_onehot.append(col)
-        X = pd.get_dummies(X,prefix='onehot', columns=columns_to_onehot)
-
+        X = pd.get_dummies(X, columns=columns_to_onehot)
     return X, y
 
 def weather():

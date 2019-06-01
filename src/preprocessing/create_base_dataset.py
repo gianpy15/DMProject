@@ -67,22 +67,22 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             return pd.Series((
                     row.DATETIME_UTC[:event_beginning_step], row.DATETIME_UTC[event_beginning_step:], 
                     row.SPEED_AVG[:event_beginning_step],    row.SPEED_AVG[event_beginning_step:],
-                    row.SPEED_SD[:event_beginning_step],     row.SPEED_SD[event_beginning_step:],
-                    row.SPEED_MAX[:event_beginning_step],    row.SPEED_MAX[event_beginning_step:],
-                    row.SPEED_MIN[:event_beginning_step],    row.SPEED_MIN[event_beginning_step:],
-                    row.N_VEHICLES[:event_beginning_step],   row.N_VEHICLES[event_beginning_step:],
-                    row.WEATHER[:event_beginning_step],      row.WEATHER[event_beginning_step:],
-                    row.DISTANCE[:event_beginning_step],     row.DISTANCE[event_beginning_step:],
+                    row.SPEED_SD[:event_beginning_step],
+                    row.SPEED_MAX[:event_beginning_step],
+                    row.SPEED_MIN[:event_beginning_step],
+                    row.N_VEHICLES[:event_beginning_step],
+                    row.WEATHER[:event_beginning_step],
+                    row.DISTANCE[:event_beginning_step],
             ))
         
         print('Splitting time steps into separate columns...')
-        joined_df[['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
-                    'SPEED_MAX','SPEED_MAX_Y', 'SPEED_MIN','SPEED_MIN_Y',
-                    'N_VEHICLES', 'N_VEHICLES_Y', 'WEATHER', 'WEATHER_Y', 'DISTANCE', 'DISTANCE_Y']] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
+        
+        columns_to_split = ['DATETIME_UTC','DATETIME_UTC_y',
+                            'SPEED_AVG','SPEED_AVG_Y',
+                            'SPEED_SD', 'SPEED_MAX', 'SPEED_MIN', 'N_VEHICLES', 'WEATHER', 'DISTANCE']
+        joined_df[columns_to_split] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
 
-        for col_name in ['DATETIME_UTC','DATETIME_UTC_y', 'SPEED_AVG','SPEED_AVG_Y', 'SPEED_SD','SPEED_SD_Y',
-                            'SPEED_MAX','SPEED_MAX_Y','SPEED_MIN','SPEED_MIN_Y', 'N_VEHICLES', 'N_VEHICLES_Y',
-                            'WEATHER', 'WEATHER_Y', 'DISTANCE', 'DISTANCE_Y']:
+        for col_name in columns_to_split:
             if col_name.upper().endswith('_Y'):
                 new_cols = ['{}_{}'.format(col_name, i) for i in range(0, steps_after_event+1)]
             else:
@@ -90,14 +90,12 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             
             joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
-        joined_df = joined_df.drop(['DATETIME_UTC','SPEED_AVG','SPEED_SD','SPEED_MAX','SPEED_MIN','N_VEHICLES',
-                                    'DATETIME_UTC_y','SPEED_AVG_Y','SPEED_SD_Y','SPEED_MAX_Y','SPEED_MIN_Y','N_VEHICLES_Y',
-                                    'WEATHER', 'WEATHER_Y',	'DISTANCE', 'DISTANCE_Y'], axis=1)
+        joined_df = joined_df.drop(columns_to_split, axis=1)
 
         if mode == 'train':
             pass
             # take random validation rows
-            pass
+            
             # random_indices = random.shuffle(joined_df.index)
             # validation_indices = random_indices[0: int(len(random_indices) * validation_split)]
             # train_df = joined_df.drop(validation_indices)
