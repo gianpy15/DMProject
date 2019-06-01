@@ -28,7 +28,14 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # if speed_imputed:
         #     s = data.speeds(mode).merge(sensors, how='left')
         # else:
-        s = data.speeds_original(mode).merge(sensors, how='left')
+        s = utility.reduce_mem_usage(data.speeds_original(mode).merge(sensors, how='left'))
+        # - events
+        e = utility.reduce_mem_usage(data.events(mode))
+        # - weather
+        # ......
+        print('Done')
+        data.flush_cache()
+        print_memory_usage()
         
         # - events
         s = s.merge(weather, how='left')
@@ -95,7 +102,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         if mode == 'train':
             pass
             # take random validation rows
-            
+
             # random_indices = random.shuffle(joined_df.index)
             # validation_indices = random_indices[0: int(len(random_indices) * validation_split)]
             # train_df = joined_df.drop(validation_indices)
@@ -108,6 +115,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         joined_df.to_csv(filepath, index=False, compression='gzip')
         print('Done\n')    
         del joined_df
+
+def print_memory_usage():
+    process = psutil.Process(os.getpid())
+    print(f'Current memory usage: {int(process.memory_info().rss / float(2 ** 20))}MB')
 
 
 if __name__ == '__main__':
