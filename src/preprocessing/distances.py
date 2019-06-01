@@ -61,6 +61,8 @@ def sort_station_by_closest(distances_df, column):
     return distances_df
 
 def preprocess():
+    print('Preprocessing distances...')
+    
     distances_df = data.distances_original()
     distances_df_path = '{}/distances.csv.gz'.format(data._BASE_PATH_PREPROCESSED)
     create_if_does_not_exist(distances_df_path)

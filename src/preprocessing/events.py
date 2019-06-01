@@ -17,10 +17,13 @@ def preprocess(km_influence_before=5, km_influence_after=2):
     - expand the timestamps creating new rows for the intermediate timestamps (ex: event from 13:12 to 13:43 will be expanded
         to 3 rows: 13:15, 13:30, 13:45)
     """
+    print('Preprocessing events...')
+    
     for mode in ['train','test']:
         filename = 'events_{}.csv.gz'
         events_df = pd.read_csv(os.path.join('resources/dataset/originals', filename.format(mode)))
 
+        # reorder KM_START and KM_END, such that KM_START <= KM_END
         start_km = np.minimum(events_df['KM_START'].values, events_df['KM_END'].values)
         end_km = np.maximum(events_df['KM_START'].values, events_df['KM_END'].values)
         events_df['KM_START'] = start_km
