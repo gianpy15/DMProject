@@ -194,3 +194,5 @@ src/__pycache__/
 
 
 src/algorithms/__pycache__/
+
+*.pyc

@@ -1,4 +1,5 @@
 from src.features.avg_speed_street import AvgSpeedStreet
+from src.features.avg_speed_sensor import AvgSpeedSensor
 from src import data
 
 """
@@ -10,6 +11,7 @@ from src import data
                         will be applied the onehot only if specified by the boolean attribute
 """
 def merge_single_mode(base_dataset, features_array, default_one_hot=False):
+    print(f'df_shape: {base_dataset.shape}')
     for f in features_array:
         if type(f) == tuple:
             feature = f[0]().read_feature(one_hot=f[1])
@@ -25,10 +27,11 @@ def merge(features_array, default_one_hot=False):
     train_base = data.base_dataset('train')
     test_base = data.base_dataset('test')
     merged_train = merge_single_mode(train_base, features_array, default_one_hot)
+    print('train completed \n')
     merged_test = merge_single_mode(test_base, features_array, default_one_hot)
     merged_train.to_csv(save_path + 'merged_dataframe_train.csv.gz', compression='gzip', index=False)
     merged_test.to_csv(save_path + 'merged_dataframe_test.csv.gz', compression='gzip', index=False)
 
 if __name__ == '__main__':
-    features_array = [AvgSpeedStreet]
+    features_array = [AvgSpeedStreet, AvgSpeedSensor]
     merge(features_array)
