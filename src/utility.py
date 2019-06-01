@@ -18,19 +18,19 @@ def df_to_datetime(df, columns):
         df[c] = pd.to_datetime(df[c])
     return df
 
-def discretize_timestamp(df, col_name, step=15*60, floor=True, rename_col=None):
+def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None):
     """
     Discretize a datetime column of a dataframe.
     df (dataframe):     dataframe
     col_name (str):     name of the datetime column
     step (int):         interval of discretization
-    floor (bool):       whether to approximate to the lower or upper value
+    ceil (bool):       whether to approximate to the lower or upper value
     rename_col (str):   name of the new column, None to replace the old one
     """
     unix_timestamps = df[col_name].astype('int64') // 10**9 #s
     remainders = unix_timestamps % step
 
-    if floor:
+    if ceil:
         times_serie = pd.to_datetime(unix_timestamps - remainders + step, unit='s')
     else:
         times_serie = pd.to_datetime(unix_timestamps - remainders, unit='s')
@@ -94,8 +94,8 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     df = df.sort_values(col_ts_start).reset_index()
 
     # discretize the timestamps
-    df = discretize_timestamp(df, col_name=col_ts_start, floor=True)
-    df = discretize_timestamp(df, col_name=col_ts_end, floor=True)
+    df = discretize_timestamp(df, col_name=col_ts_start, ceil=True)
+    df = discretize_timestamp(df, col_name=col_ts_end, ceil=True)
 
     # cast the datatimes to unix timestamps (s)
     df[col_ts_start] = df[col_ts_start].astype('int') // 10**9   #s
