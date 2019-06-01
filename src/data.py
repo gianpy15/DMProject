@@ -24,6 +24,7 @@ _speeds_df_imputed = {'train': None, 'test': None}
 _weather_df = None
 _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
+_merged_dataset_df = {'train': None, 'test': None}
 _base_structure_hours_df = None
 
 def flush_cache():
@@ -54,6 +55,9 @@ def flush_cache():
     del _base_dataset_df['train']
     del _base_dataset_df['test']
     del _base_dataset_df
+    del _merged_dataset_df['train']
+    del _merged_dataset_df['test']
+    del _merged_dataset_df
     del _base_structure_hours_df
     gc.collect()
     
@@ -119,7 +123,6 @@ def base_structure_hours():
     print('shape of the dataframe is: {}'.format(_base_structure_hours_df.shape))
     return _base_structure_hours_df
 
-
 def base_dataset(mode='train'):
     """
     Return df
@@ -139,6 +142,16 @@ def base_dataset(mode='train'):
         #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
     return _base_dataset_df[mode]
+
+def merged_dataset(mode='train'):
+    check_mode(mode)
+
+    merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
+    if _merged_dataset_df[mode] is None:
+        print('caching merged dataset {}'.format(mode))
+        _merged_dataset_df[mode] = pd.read_csv(merged_dataset_path, parse_dates=True)
+
+    return _merged_dataset_df[mode]
 
 def dataset(mode='train', onehot=True, drop_index_columns=True):
     """
