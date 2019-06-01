@@ -22,18 +22,6 @@ def avg_speed_for_roadtype() -> pd.DataFrame:
     df[DATETIME] = pd.to_datetime(df.DATETIME_UTC)
     
     return df[['ROAD_TYPE', 'SPEED_AVG']].groupby('ROAD_TYPE').mean()
-    
-def avg_speed_for_sensor() -> pd.DataFrame:
-    tr = data.speeds_original('train')
-    te = data.speeds_original('test')
-    df = pd.concat([tr, te])
-    return df[['KEY', 'KM', 'SPEED_AVG']].groupby(['KEY', 'KM']).mean().reset_index()
-
-def avg_speed_for_street() -> pd.DataFrame:
-    tr = data.speeds_original('train')
-    te = data.speeds_original('test')
-    df = pd.concat([tr, te])
-    return df[['KEY', 'SPEED_AVG']].groupby(['KEY']).mean().reset_index()
 
 def avg_speed_for_roadtype_event() -> pd.DataFrame:
     speeds = data.speeds_original()

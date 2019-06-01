@@ -179,9 +179,10 @@ resources/data/*.gz
 .vscode
 
 resources/dataset/preprocessed/*
-!resources/dataset/preprocessed/base_structure_df_weather.csv.gz
 resources/dataset/originals/*
-#resources/dataset/**/*.gz
+resources/dataset/**/*.gz
+!resources/dataset/preprocessed/base_structure_df_weather.csv.gz
+
 
 src/__pycache__/data\.cpython-36\.pyc
 
@@ -194,3 +195,5 @@ src/__pycache__/
 
 
 src/algorithms/__pycache__/
+
+*.pyc
