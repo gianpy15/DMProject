@@ -29,9 +29,9 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # if speed_imputed:
         #     s = data.speeds(mode).merge(sensors, how='left')
         # else:
-        s = utility.reduce_mem_usage(data.speeds_original(mode).merge(sensors, how='left'))
+        s = data.speeds_original(mode).merge(sensors, how='left')
         # - events
-        e = utility.reduce_mem_usage(data.events(mode))
+        e = data.events(mode)
         # - weather
         # ......
         print('Done')
@@ -98,16 +98,24 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             
             joined_df[new_cols] = pd.DataFrame(joined_df[col_name].values.tolist(), index=joined_df.index)
 
+        # removed the residual columns of lists
         joined_df = joined_df.drop(columns_to_split, axis=1)
 
+        # drop the rows for which all speeds are NaNs
+        print('Dataset shape:', joined_df.shape)
+        print('Dropping not available speeds...')
+        joined_df.dropna(how='all', subset=[col for col in joined_df.columns if col.startswith('SPEED_AVG_')], inplace=True)
+        print('Dataset shape reduced to:', joined_df.shape)
+
+        """
         if mode == 'train':
-            pass
             # take random validation rows
 
             # random_indices = random.shuffle(joined_df.index)
             # validation_indices = random_indices[0: int(len(random_indices) * validation_split)]
             # train_df = joined_df.drop(validation_indices)
             # valid_df = joined_df.loc[validation_indices]
+        """
 
         # save the base structure
         filename = 'base_dataframe_{}.csv.gz'.format(mode)
