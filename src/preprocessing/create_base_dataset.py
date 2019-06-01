@@ -104,7 +104,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # drop the rows for which all speeds are NaNs
         print('Dataset shape:', joined_df.shape)
         print('Dropping not available speeds...')
-        joined_df.dropna(how='all', subset=[col for col in joined_df.columns if col.startswith('SPEED_AVG_')], inplace=True)
+        joined_df.dropna(how='all', subset=[f'SPEED_AVG_{i}' for i in range(-steps_behind_event, 0)], inplace=True)
         print('Dataset shape reduced to:', joined_df.shape)
 
         """
