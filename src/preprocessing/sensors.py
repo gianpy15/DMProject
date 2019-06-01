@@ -7,7 +7,8 @@ import pandas as pd
 import src.data as data
 from src.utility import check_folder
 
-def preprocess_sensors():
+def preprocess():
+    print('Preprocessing sensors...')
     _BASE_PATH = 'resources/dataset/preprocessed'
     check_folder(_BASE_PATH)
 
@@ -19,4 +20,4 @@ def preprocess_sensors():
     sensors_df.to_csv(path_or_buf=f'{_BASE_PATH}/sensors.csv.gz', index=False, compression='gzip')
 
 if __name__ == '__main__':
-    preprocess_sensors()
+    preprocess()

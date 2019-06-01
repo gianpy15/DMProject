@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 
 class ChainableModel():
     """
-        Base class for the models that can be used in a multioutput or chain model.
+        Base class for models that can be used in a multioutput or chain model.
     """
 
     def __init__(self, params_dict):
