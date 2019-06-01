@@ -40,7 +40,7 @@ def avg_speed_for_roadtype_event() -> pd.DataFrame:
     events = data.events()
     sensors = data.sensors()
     merged = utility.merge_speed_events(speeds, events)
-    
+
     merged = pd.merge(merged, sensors, left_on=[KEY, KM], right_on=[KEY, KM])
     merged = merged[[EVENT_TYPE, SPEED_AVG, ROAD_TYPE]].dropna().groupby([EVENT_TYPE, ROAD_TYPE])
     merged = merged.agg(['mean', 'std'])
