@@ -31,22 +31,18 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # if speed_imputed:
         #     s = data.speeds(mode).merge(sensors, how='left')
         # else:
-        s = data.speeds_original(mode).merge(sensors, how='left')
-        # - events
+        print('Merging speeds and events...')
         e = data.events(mode)
-        # - weather
-        # ......
+        s = utility.merge_speed_events(data.speeds_original(mode), e)
+
+        s = s.merge(sensors, how='left')
+        
         print('Done')
         data.flush_cache()
         print_memory_usage()
         
         # - events
-        s = s.merge(weather, how='left')
-        e = data.events(mode)
-
-        # join dataframes
-        print('Merging speeds and events...')
-        joined_df = utility.merge_speed_events(s, e)
+        joined_df = s.merge(weather, how='left')
 
         # create the time windows for each event
         print('Creating time windows for events...')
@@ -70,6 +66,9 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             'EVENT_TYPE':lambda x: x.values[steps_behind_event],
             'WEATHER': list,
             'DISTANCE': list,
+            'TEMPERATURE': list,
+            'MIN_TEMPERATURE': list,
+            'MAX_TEMPERATURE': list
         })
         
         # split the last m measures in different columns
@@ -83,13 +82,17 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
                     row.N_VEHICLES[:event_beginning_step],
                     row.WEATHER[:event_beginning_step],
                     row.DISTANCE[:event_beginning_step],
+                    row.TEMPERATURE[:event_beginning_step],
+                    row.MIN_TEMPERATURE[:event_beginning_step],
+                    row.MAX_TEMPERATURE[:event_beginning_step],
             ))
         
         print('Splitting time steps into separate columns...')
         
         columns_to_split = ['DATETIME_UTC','DATETIME_UTC_y',
                             'SPEED_AVG','SPEED_AVG_Y',
-                            'SPEED_SD', 'SPEED_MAX', 'SPEED_MIN', 'N_VEHICLES', 'WEATHER', 'DISTANCE']
+                            'SPEED_SD', 'SPEED_MAX', 'SPEED_MIN', 'N_VEHICLES', 'WEATHER', 'DISTANCE',
+                            'TEMPERATURE', 'MIN_TEMPERATURE', 'MAX_TEMPERATURE']
         joined_df[columns_to_split] = joined_df.apply(split_prediction_fields, axis=1, event_beginning_step=steps_behind_event)
 
         for col_name in columns_to_split:
@@ -137,4 +140,4 @@ def print_memory_usage():
 
 
 if __name__ == '__main__':
-    create_base_dataset(steps_behind_event=10, steps_after_event=3)
+    create_base_dataset(steps_behind_event=3, steps_after_event=3)
