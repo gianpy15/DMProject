@@ -7,6 +7,7 @@ import numpy as np
 import random
 import src.data as data
 import src.utility as utility
+import psutil
 
 
 def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2): #, speed_imputed=True):
