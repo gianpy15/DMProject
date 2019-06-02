@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from src.features.avg_speed_street import AvgSpeedStreet
 from src.features.avg_speed_sensor import AvgSpeedSensor
 from src.features.avg_speed_sensor_hour import AvgSpeedSensorHour
