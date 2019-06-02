@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import src.utility as utility
 import gc
+from src.utils.datetime_converter import convert_to_datetime
 
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
@@ -137,7 +138,7 @@ def base_dataset(mode='train'):
             create_base_dataset.create_base_dataset(steps_behind_event=10)
 
         print('caching base dataset {}'.format(mode))
-        _base_dataset_df[mode] = pd.read_csv(base_dataset_path, parse_dates=True)
+        _base_dataset_df[mode] = convert_to_datetime(pd.read_csv(base_dataset_path, parse_dates=True))
         #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
         #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
@@ -149,7 +150,7 @@ def merged_dataset(mode='train'):
     merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
     if _merged_dataset_df[mode] is None:
         print('caching merged dataset {}'.format(mode))
-        _merged_dataset_df[mode] = pd.read_csv(merged_dataset_path, parse_dates=True)
+        _merged_dataset_df[mode] = convert_to_datetime(pd.read_csv(merged_dataset_path, parse_dates=True))
 
     return _merged_dataset_df[mode]
 
@@ -157,7 +158,7 @@ def dataset(mode='train', onehot=True, drop_index_columns=True):
     """
     Return X and Y
     """
-    df = base_dataset(mode)
+    df = merged_dataset(mode)
 
     # retrieve the target values and move them on Y
     Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
