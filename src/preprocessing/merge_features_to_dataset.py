@@ -4,6 +4,7 @@ sys.path.append(os.getcwd())
 
 from src.features.avg_speed_street import AvgSpeedStreet
 from src.features.avg_speed_sensor import AvgSpeedSensor
+from src.features.avg_speed_sensor_hour import AvgSpeedSensorHour
 from src import data
 
 """
@@ -18,11 +19,9 @@ def merge_single_mode(base_dataset, features_array, default_one_hot=False):
     print(f'df_shape: {base_dataset.shape}')
     for f in features_array:
         if type(f) == tuple:
-            feature = f[0]().read_feature(one_hot=f[1])
+            base_dataset = f[0]().join_to(base_dataset, one_hot=f[1])
         else:
-            feature = f().read_feature(one_hot=default_one_hot)
-        print(f'len of feature:{len(feature)}')
-        base_dataset = base_dataset.merge(feature)
+            base_dataset = f().join_to(base_dataset, one_hot=default_one_hot)
         print(f'df_shape: {base_dataset.shape}')
     return base_dataset
 
@@ -41,6 +40,7 @@ if __name__ == '__main__':
     features_array = [
         AvgSpeedStreet,
         AvgSpeedSensor,
+        AvgSpeedSensorHour,
     ]
 
     merge(features_array)
