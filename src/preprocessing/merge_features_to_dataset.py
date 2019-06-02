@@ -37,5 +37,10 @@ def merge(features_array, default_one_hot=False):
     merged_test.to_csv(save_path + 'merged_dataframe_test.csv.gz', compression='gzip', index=False)
 
 if __name__ == '__main__':
-    features_array = [AvgSpeedStreet, AvgSpeedSensor]
+
+    features_array = [
+        AvgSpeedStreet,
+        AvgSpeedSensor,
+    ]
+
     merge(features_array)

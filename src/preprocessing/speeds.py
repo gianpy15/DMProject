@@ -6,6 +6,7 @@ sys.path.append(os.getcwd())
 import numpy as np
 import pandas as pd
 
+import src.data as data
 import src.utility as utility
 import src.utils.folder as folder
 from src.utils import *
@@ -73,8 +74,30 @@ def preprocess(infer_size: int = 3, algorithm: str = 'time', data: str = 'train'
         complete_df.to_csv(resources_path('dataset', 'preprocessed', 'speeds_{}_imputed_time.csv.gz'.format(s)), compression='gzip')
         print('Done')
 
+        if s == 'test':
+            create_speeds_test_for_unbiased_features(complete_df)
+
+
+def create_speeds_test_for_unbiased_features(speeds_test):
+    """ Mask the speeds in test that cannot be used to compute features (i.e.:
+    the speeds during the 4 steps to predict).
+    Save a new dataframe without those speed measures.
+    """
+    e = data.events('test')
+    joined_df = utility.merge_speed_events(speeds_test, e)
+
+    speeds_target = utility.time_windows_event(joined_df, steps_behind=0, steps_after=3)
+    speeds_target.dropna(subset=['KEY'], inplace=True)
+
+    # filter the speeds where the speed is not a target
+    speeds_not_target = speeds_target.drop(speeds_target.index)
+    # save
+    speeds_not_target.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gzip', compression='gzip')
 
 if __name__ == '__main__':
-    parser = setup_parser()
-    args = parser.parse_args(sys.argv[1:])
-    preprocess(args.size, args.algorithm, args.data)
+    # parser = setup_parser()
+    # args = parser.parse_args(sys.argv[1:])
+    # preprocess(args.size, args.algorithm, args.data)
+
+    # preprocess speeds test
+    create_speeds_test_for_unbiased_features(data.speeds_original('test'))
