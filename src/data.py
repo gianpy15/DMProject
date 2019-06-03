@@ -22,6 +22,7 @@ _events_df_preprocessed = {'train': None, 'test': None}
 
 _speeds_df = {'train': None, 'test': None}
 _speeds_df_imputed = {'train': None, 'test': None}
+_speed_test_masked = None
 _weather_df = None
 _base_structure_df = None
 _base_dataset_df = {'train': None, 'test': None}
@@ -29,7 +30,7 @@ _merged_dataset_df = {'train': None, 'test': None}
 _base_structure_hours_df = None
 
 def flush_cache():
-    print('gianpy svuotooooo tutto!')
+    print('flushing data cache')
     global _distances_df_original,_distances_df_preprocessed,_sensors_df,_sensors_df_preprocessed,_events_df,\
     _events_df_preprocessed, _speeds_df, _speeds_df_imputed, _weather_df, _base_structure_df,_base_dataset_df,\
     _base_structure_hours_df
@@ -58,7 +59,6 @@ def flush_cache():
     del _base_dataset_df
     del _merged_dataset_df['train']
     del _merged_dataset_df['test']
-    del _merged_dataset_df
     del _base_structure_hours_df
     gc.collect()
     
@@ -153,7 +153,11 @@ def dataset_interpolated(mode, onehot=True, drop_index_columns=True):
     return split_X_y(dataset, onehot, drop_index_columns)
 
 def dataset(mode='train', onehot=True, drop_index_columns=True):
+    """
+    Return X and Y of the base dataset
+    """
     check_mode(mode)
+    df = base_dataset(mode)
 
     merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
     if _merged_dataset_df[mode] is None:
@@ -219,6 +223,11 @@ def speeds(mode='train', imputed_method='time'):
 
     return _speeds_df_imputed[mode]
 
+def speed_test_masked():
+    global _speed_test_masked
+    if _speed_test_masked is None:
+        _speed_test_masked = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c')
+    return _speed_test_masked
 
 def weather_original(mode='train'):
     check_mode(mode)
