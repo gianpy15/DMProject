@@ -39,7 +39,7 @@ if __name__ == '__main__':
             X_df.rename(columns={SPEED_AVG: speed_avg, SPEED_MAX: speed_max, SPEED_MIN: speed_min, SPEED_SD: speed_std, N_CARS: n_cars}, inplace=True)
 
         print('Done')
-        columns = [c for c in X_df if c.startswith('DATETIME_UTC_x') or c.startswith('DATETIME_UTC_y') or c.startswith('SPEED_AVG_Y')]
+        columns = [c for c in X_df if c.startswith('DATETIME_UTC_x') or c == 'DATETIME_UTC_y']
         X_df.drop(columns=columns, inplace=True)
         path = resources_path('dataset', 'preprocessed', 'base_dataframe_train_inferred.csv.gz')
         X_df.to_csv(path, compression='gzip')
