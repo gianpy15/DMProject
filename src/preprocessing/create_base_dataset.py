@@ -38,7 +38,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         s = s.merge(sensors, how='left')
         
         print('Done')
-        data.flush_cache()
+        #data.flush_cache()
         print_memory_usage()
         
         # - events
@@ -140,4 +140,4 @@ def print_memory_usage():
 
 
 if __name__ == '__main__':
-    create_base_dataset(steps_behind_event=3, steps_after_event=3)
+    create_base_dataset(steps_behind_event=4, steps_after_event=3)
