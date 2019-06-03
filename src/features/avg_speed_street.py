@@ -16,7 +16,7 @@ class AvgSpeedStreet(FeatureBase):
 
     def extract_feature(self):
         tr = data.speeds_original('train')
-        te = data.speeds_original('test')
+        te = data.speed_test_masked()
         df = pd.concat([tr, te])
         f = df[['KEY', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY']).mean().reset_index()\
                 .rename(columns={'SPEED_AVG': 'avg_speed_street',\
