@@ -92,7 +92,7 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     # filter the speeds where the speed is not a target
     speeds_not_target = speeds_target.drop(speeds_target.index)
     # save
-    speeds_not_target.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gzip', compression='gzip')
+    speeds_not_target.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gz', compression='gzip')
 
 if __name__ == '__main__':
     parser = setup_parser()
