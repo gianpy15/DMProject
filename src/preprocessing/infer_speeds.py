@@ -22,7 +22,8 @@ if __name__ == '__main__':
     
     speeds[DATETIME] = pd.to_datetime(speeds[DATETIME])
     print('Inferring...')
-    for i in tqdm(range(1, 11)):
+    window_len = sum(X_df.columns.str.match('^SPEED_AVG_-.*$')*1)
+    for i in tqdm(range(1, window_len+1)):
         time = 'DATETIME_UTC_-' + str(i)
         speed_avg = 'SPEED_AVG_-' + str(i)
         speed_max = 'SPEED_MAX_-' + str(i)

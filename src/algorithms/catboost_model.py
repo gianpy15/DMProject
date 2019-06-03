@@ -22,6 +22,8 @@ class CatBoost(ChainableModel):
 if __name__ == "__main__":
     import src.data as data
     import numpy as np
+    import src.utils.folder as folder
+    import src.algorithms.inout as inout
 
     from src.algorithms.multioutput import MultiOutputRegressor, RegressorChain
     from sklearn.utils import shuffle
@@ -33,17 +35,18 @@ if __name__ == "__main__":
     chain_mode = input('Choose the chain mode (m: multioutput / c: regressorchain): ').lower()
     M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
-    X, Y = data.dataset(onehot=False, drop_index_columns=True)
+    #X, Y = data.dataset(onehot=False, drop_index_columns=True)
+    X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
 
     # add features
-    import src.preprocessing.other_features as feat
-    avg_speed_road_event = feat.avg_speed_for_roadtype_event()
-    X = X.merge(avg_speed_road_event, how='left', on=['EVENT_TYPE','ROAD_TYPE'])
-    del avg_speed_road_event
+    # import src.preprocessing.other_features as feat
+    # avg_speed_road_event = feat.avg_speed_for_roadtype_event()
+    # X = X.merge(avg_speed_road_event, how='left', on=['EVENT_TYPE','ROAD_TYPE'])
+    # del avg_speed_road_event
 
     X.fillna(0, inplace=True)
 
-    weather_cols = [f'WEATHER_{i}' for i in range(-10,0)]
+    weather_cols = [col for col in X.columns if col.startswith('WEATHER_')]
     categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL','EVENT_TYPE'] + weather_cols
 
     catboost = CatBoost({
@@ -56,7 +59,7 @@ if __name__ == "__main__":
         'early_stopping_rounds': 100,
         'cat_features': categorical_cols
     })
-
+    
     model = M(catboost)
     model.fit(X, Y)
 
@@ -70,3 +73,14 @@ if __name__ == "__main__":
     mae = evaluate(X_test, y_test)
     print()
     print(mae)
+
+    # save the model
+    mae = round(mae, 5)
+
+    suffix = input('Insert model name suffix: ')
+    model_folder = 'saved_models'
+    folder.create_if_does_not_exist(model_folder)
+
+    chain_mode = 'chain' if chain_mode == 'c' else 'multiout'
+    filename = f'catboost_{chain_mode}_{mae}_{suffix}.jl'
+    inout.save(model, os.path.join(model_folder, filename))
