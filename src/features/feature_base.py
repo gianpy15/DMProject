@@ -6,7 +6,6 @@ from src.utils.menu import yesno_choice
 import os
 from sklearn.preprocessing import MultiLabelBinarizer
 import numpy as np
-import category_encoders as ce
 
 """
 extend this class and give an implementation to extract_feature to 
