@@ -144,7 +144,15 @@ def base_dataset(mode='train'):
 
     return _base_dataset_df[mode]
 
-def dataset_with_features(mode='train', onehot=True, drop_index_columns=True):
+def dataset_interpolated(mode, onehot=True, drop_index_columns=True):
+    check_mode(mode)
+
+    path = os.path.join(_BASE_PATH_PREPROCESSED, f'base_dataframe_{mode}_inferred.csv.gz')
+    dataset = pd.read_csv(path, parse_dates=True)
+
+    return split_X_y(dataset, onehot, drop_index_columns)
+
+def dataset(mode='train', onehot=True, drop_index_columns=True):
     check_mode(mode)
 
     merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
@@ -152,60 +160,8 @@ def dataset_with_features(mode='train', onehot=True, drop_index_columns=True):
         print('caching merged dataset {}'.format(mode))
         _merged_dataset_df[mode] = convert_to_datetime(pd.read_csv(merged_dataset_path, parse_dates=True))
 
-    # retrieve the target values and move them on Y
-    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
-    y = _merged_dataset_df[mode][Y_columns]
+    return split_X_y(_merged_dataset_df[mode], onehot, drop_index_columns)
 
-    TO_DROP = Y_columns
-    if drop_index_columns:
-        TO_DROP.extend(['KEY', 'KM', 'event_index'])
-
-    df = _merged_dataset_df[mode].drop(TO_DROP, axis=1)
-
-    # find the columns where is present DATETIME and filter them
-    X = df.filter(regex='^((?!DATETIME).)*$')
-
-    if onehot:
-        print('performing onehot')
-        columns_to_onehot = []
-        for col in X.columns:
-            print(col)
-            col_type = df[col].dtype
-            if col_type == object:
-                columns_to_onehot.append(col)
-        X = pd.get_dummies(X, columns=columns_to_onehot)
-    return X, y
-
-def dataset(mode='train', onehot=True, drop_index_columns=True):
-    """
-    Return X and Y of the base dataset
-    """
-    df = merged_dataset(mode)
-
-    # retrieve the target values and move them on Y
-    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
-    y = df[Y_columns]
-
-    TO_DROP = Y_columns
-    if drop_index_columns:
-        TO_DROP.extend(['KEY', 'KM', 'event_index'])
-
-    df = df.drop(TO_DROP, axis=1)
-
-    # find the columns where is present DATETIME and filter them
-    #indices = np.nonzero(np.array(list(map(lambda x: x.find('DATETIME'), df.columns))))
-    X = df.filter(regex='^((?!DATETIME).)*$')
-
-    if onehot:
-        print('performing onehot')
-        columns_to_onehot = []
-        for col in X.columns:
-            print(col)
-            col_type = df[col].dtype
-            if col_type == object:
-                columns_to_onehot.append(col)
-        X = pd.get_dummies(X, columns=columns_to_onehot)
-    return X, y
 
 def weather():
     global _weather_df
@@ -314,6 +270,31 @@ def distances_proprocessed():
     print('shape of the dataframe is: {}'.format(_distances_df_preprocessed.shape))
     return _distances_df_preprocessed
 
+def split_X_y(dataset, onehot, drop_index_columns):
+    # retrieve the target values and move them on Y
+    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
+    y = dataset[Y_columns]
+
+    TO_DROP = Y_columns
+    if drop_index_columns:
+        TO_DROP.extend(['KEY', 'KM', 'event_index'])
+
+    df = dataset.drop(TO_DROP, axis=1)
+
+    # find the columns where is present DATETIME and filter them
+    X = df.filter(regex='^((?!DATETIME).)*$')
+
+    if onehot:
+        print('performing onehot')
+        columns_to_onehot = []
+        for col in X.columns:
+            print(col)
+            col_type = df[col].dtype
+            if col_type == object:
+                columns_to_onehot.append(col)
+        X = pd.get_dummies(X, columns=columns_to_onehot)
+
+    return X, y
 
 if __name__ == '__main__':
     dataset()
