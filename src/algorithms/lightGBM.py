@@ -68,7 +68,7 @@ class lightGBM(ChainableModel):
 if __name__ == '__main__':
     weather_cols = [f'WEATHER_{i}' for i in range(-10, 0)]
     categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE'] + weather_cols
-    X, y = data.dataset('train', onehot=False)
+    X, y = data.dataset_with_features('train', onehot=False)
     X.fillna(0, inplace=True)
     X = reduce_mem_usage(X)
 
@@ -77,19 +77,19 @@ if __name__ == '__main__':
         'objective': 'regression_l1',
         'boosting_type':'gbdt',
         'num_leaves': 21,
-        'max_depth': -1,
+        'max_depth': 8,
         'learning_rate': 0.01,
         'n_estimators': 1000,
         'subsample_for_bin': 200000,
         'class_weights': None,
         'min_split_gain': 0.001,
-        'min_child_weight': 0.0,
+        'min_child_weight': 0.01,
         'min_child_samples': 1,
         'subsample': 1.0,
         'subsample_freq': 0,
-        'colsample_bytree': 1,
-        'reg_alpha': 8.15,
-        'reg_lambda': 2.95,
+        'colsample_bytree': 0.8,
+        'reg_alpha': 0,
+        'reg_lambda': 0,
         'random_state': None,
         'n_jobs': -1,
         'silent': False,
@@ -102,6 +102,8 @@ if __name__ == '__main__':
     model = lightGBM(params_dict=params_dict)
     model_wrapper = RegressorChain(model)
     model_wrapper.fit(X, y)
+
+
 
 
 
