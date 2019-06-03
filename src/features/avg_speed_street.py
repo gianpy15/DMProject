@@ -5,8 +5,8 @@ import pandas as pd
 
 class AvgSpeedStreet(FeatureBase):
     """
-    say for each street the avg speed
-    | KEY | avg_speed_street 
+    say for each street the avg quantities
+    | KEY | avg_speed_street | avg_speed_sd_street | avg_speed_min_street | avg_speed_max_street | avg_n_vehicles_street
     """
 
     def __init__(self):
@@ -18,7 +18,13 @@ class AvgSpeedStreet(FeatureBase):
         tr = data.speeds_original('train')
         te = data.speeds_original('test')
         df = pd.concat([tr, te])
-        return df[['KEY', 'SPEED_AVG']].groupby(['KEY']).mean().reset_index().rename(columns={'SPEED_AVG': 'avg_speed_street'})
+        f = df[['KEY', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY']).mean().reset_index()\
+                .rename(columns={'SPEED_AVG': 'avg_speed_street',\
+                                'SPEED_SD': 'avg_speed_sd_street', \
+                                'SPEED_MIN': 'avg_speed_min_street', \
+                                'SPEED_MAX': 'avg_speed_max_street', \
+                                'N_VEHICLES': 'avg_n_vehicles_street'})
+        return f
 
 if __name__ == '__main__':
     c = AvgSpeedStreet()
