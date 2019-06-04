@@ -101,6 +101,7 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     # now the target speeds have 1 in the 'istarget' column
     # filter the speeds where the row is not a target
     speeds_filtered = speeds_filtered[speeds_filtered['istarget'].isnull()]
+    speeds_filtered.drop('istarget', axis=1, inplace=True)
     
     # save
     speeds_filtered.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gz', compression='gzip')
