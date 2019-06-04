@@ -41,7 +41,7 @@ if __name__ == '__main__':
         print('Done')
         columns = [c for c in X_df if c.startswith('DATETIME_UTC_x') or c == 'DATETIME_UTC_y']
         X_df.drop(columns=columns, inplace=True)
-        path = resources_path(f'dataset', 'preprocessed', 'base_dataframe_{t}_inferred.csv.gz')
+        path = resources_path(f'dataset', 'preprocessed', f'base_dataframe_{t}_inferred.csv.gz')
         X_df.to_csv(path, compression='gzip')
         print('Saved dataset to ' + path)
     

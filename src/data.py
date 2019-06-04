@@ -148,7 +148,7 @@ def dataset_interpolated(mode, onehot=True, drop_index_columns=True):
     check_mode(mode)
 
     path = os.path.join(_BASE_PATH_PREPROCESSED, f'base_dataframe_{mode}_inferred.csv.gz')
-    dataset = pd.read_csv(path, parse_dates=True)
+    dataset = pd.read_csv(path, parse_dates=True, index_col=0)
 
     return split_X_y(dataset, onehot, drop_index_columns)
 
@@ -157,12 +157,14 @@ def dataset(mode='train', onehot=True, drop_index_columns=True):
     Return X and Y of the base dataset
     """
     check_mode(mode)
-    df = base_dataset(mode)
+    #df = base_dataset(mode)
 
     merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
     if _merged_dataset_df[mode] is None:
         print('caching merged dataset {}'.format(mode))
         _merged_dataset_df[mode] = convert_to_datetime(pd.read_csv(merged_dataset_path, parse_dates=True))
+
+    _merged_dataset_df[mode].sort_values('DATETIME_UTC_y_0', inplace=True)
 
     return split_X_y(_merged_dataset_df[mode], onehot, drop_index_columns)
 

@@ -35,8 +35,8 @@ if __name__ == "__main__":
     chain_mode = input('Choose the chain mode (m: multioutput / c: regressorchain): ').lower()
     M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
-    #X, Y = data.dataset(onehot=False, drop_index_columns=True)
-    X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
+    #X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
+    X, Y = data.dataset_interpolated('train', onehot=False)
 
     # add features
     # import src.preprocessing.other_features as feat
@@ -63,14 +63,8 @@ if __name__ == "__main__":
     model = M(catboost)
     model.fit(X, Y)
 
-    def evaluate(X_test, y_test):
-        mask_test = np.all(y_test.notnull(), axis=1)
-
-        y_pred = model.predict(X_test[mask_test])
-        return mean_absolute_error(y_test[mask_test], y_pred)
-
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
-    mae = evaluate(X_test, y_test)
+    mae = inout.evaluate(X_test, y_test)
     print()
     print(mae)
 
