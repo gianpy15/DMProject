@@ -228,7 +228,8 @@ def speeds(mode='train', imputed_method='time'):
 def speed_test_masked():
     global _speed_test_masked
     if _speed_test_masked is None:
-        _speed_test_masked = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', parse_dates=True)
+        _speed_test_masked = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', 
+                                            index_col=0, parse_dates=True)
     return _speed_test_masked
 
 def weather_original(mode='train'):
