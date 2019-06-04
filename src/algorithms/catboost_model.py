@@ -47,7 +47,7 @@ if __name__ == "__main__":
         'X': X,
         'loss_function': 'MAE',
         'eval_metric': 'MAE',
-        'n_estimators':2000,
+        'n_estimators':3500,
         'depth':6,
         'learning_rate':1,
         'early_stopping_rounds': 100,
