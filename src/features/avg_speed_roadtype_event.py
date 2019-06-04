@@ -56,5 +56,5 @@ if __name__ == '__main__':
     print('Creating {}'.format(c.name))
     c.save_feature()
 
-    print(c.read_feature)
+    print(c.read_feature())
 
