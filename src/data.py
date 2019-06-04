@@ -139,8 +139,6 @@ def base_dataset(mode='train'):
 
         print('caching base dataset {}'.format(mode))
         _base_dataset_df[mode] = convert_to_datetime(pd.read_csv(base_dataset_path, parse_dates=True))
-        #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
-        #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
     return _base_dataset_df[mode]
 
@@ -192,8 +190,7 @@ def events(mode='train'):
         filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
         _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c', index_col=0)
-        _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
-                                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+        _events_df_preprocessed[mode] = convert_to_datetime(_events_df_preprocessed[mode])
 
     return _events_df_preprocessed[mode]
 
@@ -207,7 +204,7 @@ def speeds_original(mode='train'):
         filepath = f'{_BASE_PATH_ORIGINALS}/speeds_{mode}.csv.gz'
         print(f'caching {filepath}')
         _speeds_df[mode] = pd.read_csv(filepath, engine='c')
-        _speeds_df[mode] = utility.df_to_datetime(_speeds_df[mode], columns=['DATETIME_UTC'])
+        _speeds_df[mode] = convert_to_datetime(_speeds_df[mode])
 
     return _speeds_df[mode]
 
@@ -221,15 +218,15 @@ def speeds(mode='train', imputed_method='time'):
         filepath = f'{_BASE_PATH_PREPROCESSED}/speeds_{mode}_imputed_{imputed_method}.csv.gz'
         print(f'caching {filepath}')
         _speeds_df_imputed[mode] = pd.read_csv(filepath, engine='c')
-        _speeds_df_imputed[mode] = utility.df_to_datetime(_speeds_df_imputed[mode], columns=['DATETIME_UTC'])
+        _speeds_df_imputed[mode] = convert_to_datetime(_speeds_df_imputed[mode])
 
     return _speeds_df_imputed[mode]
 
 def speed_test_masked():
     global _speed_test_masked
     if _speed_test_masked is None:
-        _speed_test_masked = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', 
-                                            index_col=0, parse_dates=True)
+        _speed_test_masked = convert_to_datetime(pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', 
+                                            index_col=0, parse_dates=True))
     return _speed_test_masked
 
 def weather_original(mode='train'):
@@ -238,7 +235,7 @@ def weather_original(mode='train'):
         filepath = f'{_BASE_PATH_ORIGINALS}/weather_{mode}.csv.gz'
         print(f'caching {filepath}')
         _weather_df[mode] = pd.read_csv(filepath, engine='c')
-        _weather_df[mode] = utility.df_to_datetime(_weather_df[mode], columns=['DATETIME_UTC'])
+        _weather_df[mode] = convert_to_datetime(_weather_df[mode])
 
     return _weather_df[mode]
 
