@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.append(os.getcwd())
+
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
@@ -19,9 +20,15 @@ class Weekday(FeatureBase):
             name=name)
 
     def extract_feature(self):
+        tr = data.speeds_original('train')
+        te = data.speed_test_masked()
+        speeds = pd.concat([tr, te])
+        del tr
+        del te
+
         print('Extracting min and max timestamps...')
-        min_datetime = data.speeds_original(mode='train').DATETIME_UTC.min()
-        max_datetime = data.speeds_original(mode='test').DATETIME_UTC.max()
+        min_datetime = speeds.DATETIME_UTC.min()
+        max_datetime = speeds.DATETIME_UTC.max()
         print('Done')
         df = pd.DataFrame(pd.date_range(min_datetime, max_datetime, freq='15min').to_series()).reset_index()
         df[DATETIME] = pd.to_datetime(df['index'])
