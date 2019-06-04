@@ -83,20 +83,32 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     the speeds during the 4 steps to predict).
     Save a new dataframe without those speed measures.
     """
+    print('Creating speeds test without target speeds...')
     e = data.events('test')
     joined_df = utility.merge_speed_events(speeds_test, e)
 
     speeds_target = utility.time_windows_event(joined_df, steps_behind=0, steps_after=3)
     speeds_target.dropna(subset=['KEY'], inplace=True)
+    # build a dataframe containing the target speeds, so that it can be joined
+    # to the original speeds and reveal the target speeds rows
+    filter_target = speeds_target[['KEY','DATETIME_UTC','KM']].drop_duplicates()
+    del speeds_target
+    # add a dummy column to the filter to perform join
+    filter_target['istarget'] = 1
 
-    # filter the speeds where the speed is not a target
-    speeds_not_target = speeds_target.drop(speeds_target.index)
+    # join the speeds and the filter
+    speeds_filtered = speeds_test.merge(filter_target, how='left')
+    # now the target speeds have 1 in the 'istarget' column
+    # filter the speeds where the row is not a target
+    speeds_filtered = speeds_filtered[speeds_filtered['istarget'].isnull()]
+    
     # save
-    speeds_not_target.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gz', compression='gzip')
+    speeds_filtered.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gz', compression='gzip')
 
 if __name__ == '__main__':
-    parser = setup_parser()
-    args = parser.parse_args(sys.argv[1:])
-    preprocess(args.size, args.algorithm, args.data)
+    # parser = setup_parser()
+    # args = parser.parse_args(sys.argv[1:])
+    # preprocess(args.size, args.algorithm, args.data)
 
     # preprocess speeds test
+    create_speeds_test_for_unbiased_features(data.speeds_original('test'))
