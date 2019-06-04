@@ -19,10 +19,15 @@ class AVGSpeedDayBefore(FeatureBase):
             name=name)
 
     def extract_feature(self):
+        tr = data.speeds_original('train')
+        te = data.speed_test_masked()
+        speeds = pd.concat([tr, te])
+        del tr
+        del te
+
         print('Extracting min and max timestamps...')
-        min_datetime = data.speeds_original(mode='train').DATETIME_UTC.min()
-        max_datetime = data.speeds_original(mode='test').DATETIME_UTC.max()
-        speeds = data.speeds_original()
+        min_datetime = speeds.DATETIME_UTC.min()
+        max_datetime = speeds.DATETIME_UTC.max()
         sensors = data.sensors().drop_duplicates([KEY, KM])
         print('Done')
         

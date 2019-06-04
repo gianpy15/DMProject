@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.append(os.getcwd())
+
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
@@ -20,7 +21,12 @@ class AvgSpeedRoadType(FeatureBase):
 
     def extract_feature(self):
         print('Loading datasets')
-        speeds = data.speeds()
+        tr = data.speeds_original('train')
+        te = data.speed_test_masked()
+        speeds = pd.concat([tr, te])
+        del tr
+        del te
+
         sensors = data.sensors()
         print('Done')
 
@@ -36,5 +42,5 @@ if __name__ == '__main__':
     print('Creating {}'.format(c.name))
     c.save_feature()
 
-    print(c.read_feature)
+    print(c.read_feature())
 

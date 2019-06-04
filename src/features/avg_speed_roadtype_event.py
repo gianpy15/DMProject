@@ -19,8 +19,20 @@ class AvgSpeedRoadTypeEvent(FeatureBase):
             name=name)
 
     def extract_feature(self):
-        speeds = data.speeds_original()
-        events = data.events()
+        tr = data.speeds_original('train')
+        te = data.speed_test_masked()
+        speeds = pd.concat([tr, te])
+        del tr
+        del te
+        
+        tr = data.events('train')
+        te = data.events('test')
+        events = pd.concat([tr, te])
+        del tr
+        del te
+
+        data.flush_cache()
+
         sensors = data.sensors()
         merged = utility.merge_speed_events(speeds, events)
 

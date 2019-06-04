@@ -1,7 +1,10 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
-
 
 class AvgSpeedStreet(FeatureBase):
     """
