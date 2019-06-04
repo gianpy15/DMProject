@@ -31,7 +31,7 @@ class AvgSpeedRoadTypeEvent(FeatureBase):
         del tr
         del te
 
-        data.flush_cache()
+        #data.flush_cache()
 
         sensors = data.sensors()
         merged = utility.merge_speed_events(speeds, events)
