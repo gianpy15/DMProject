@@ -72,7 +72,7 @@ class Weather_clusters(FeatureBase):
         matching = [i for i in range(len(df.columns.values)) if "WEATHER_-" in df.columns.values[i]]
         for i in matching:
             f_ = f.rename(columns={'WEATHER': df.columns.values[i], 'WEATHER_CL': '{}_CL'.format(df.columns.values[i])})
-            df = pd.merge(df, f_, left_on=[df.columns.values[i]], right_on=df.columns.values[i])
+            df = pd.merge(df, f_, left_on=[df.columns.values[i]], right_on=df.columns.values[i], how='left')
         return df
 
 if __name__ == '__main__':

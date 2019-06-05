@@ -24,6 +24,7 @@ class FeatureBase(ABC):
         meaning that the header of the column to onehot is 'action' and the onehot modality is 'single'
         
         """
+        self.cache = pd.DataFrame()
         self.name = name
         self.columns_to_onehot = columns_to_onehot
 
@@ -67,7 +68,7 @@ class FeatureBase(ABC):
         """ Join this feature to the specified dataframe. The default implementation will join based on the
         common column between the 2 dataframes. Override to provide a custom join logic. """
         feature_df = self.read_feature(one_hot=one_hot)
-        return df.merge(feature_df, how='left')
+        return pd.merge(df, feature_df, how='left')
 
     def read_feature(self, one_hot=False):
         """
@@ -75,17 +76,22 @@ class FeatureBase(ABC):
         if one_hot = False, it returns it as was saved.
         if one_hot = True, returns the onehot of the categorical columns, by means of self.columns_to_onehot
         """
-        path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
-        if not os.path.exists(path):
-            choice = yesno_choice('feature \'{}\' does not exist. want to create?'.format(self.name))
-            if choice == 'y':
-                self.save_feature()
-            else:
-                return
+        if len(self.cache) == 0:
+            path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
+            if not os.path.exists(path):
+                choice = yesno_choice('feature \'{}\' does not exist. want to create?'.format(self.name))
+                if choice == 'y':
+                    self.save_feature()
+                else:
+                    return
 
-        df = pd.read_csv(path, index_col=None, engine='c')
-
-        print('{} feature read'.format(self.name))
+            df = pd.read_csv(path, index_col=None, engine='c')
+            self.cache = df
+            print('{} feature read and cached'.format(self.name))
+        
+        else:
+            df = self.cache
+            print('{} feature read from cache'.format(self.name))
 
         # then proceed with one hot
         if one_hot:
