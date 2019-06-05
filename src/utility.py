@@ -97,10 +97,10 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
 
     # cast the datatimes to unix timestamps (s)
     df[col_ts_start] = df[col_ts_start].astype('int') // 10**9   #s
-    df[col_ts_end] = df.END_DATETIME_UTC.astype('int') // 10**9  #s
+    df[col_ts_end] = df[col_ts_end].astype('int') // 10**9  #s
 
     # compute the difference of the 2 timestamps in time steps of 15 minutes
-    df['step_duration'] = (df.END_DATETIME_UTC - df[col_ts_start]) // (15*60) +1
+    df['step_duration'] = (df[col_ts_end] - df[col_ts_start]) // (15*60) +1
 
     # build the time range from start to end at steps of 900 seconds (15 minutes)
     df['DATETIME_UTC'] = df.progress_apply(lambda x:
@@ -132,7 +132,7 @@ def time_windows_event(dataset_df, mode, steps_behind=10, steps_after=3, step=15
         steps_after (int): m (not including the event start)
     """
     import src.data as data
-    
+
     data.check_mode(mode)
     tqdm.pandas()
     # get the first time step of each event for each sensor
