@@ -130,10 +130,11 @@ def time_windows_event(dataset_df, t, steps_behind=10, steps_after=3, step=15*60
         dataset_df (df): dataset dataframe
         steps_behind (int): n (not including the event start)
         steps_after (int): m (not including the event start)
+        step (int): step size in seconds
     """
     import src.data as data
 
-    data.check_mode(mode)
+    data.check_t(t)
     tqdm.pandas()
     # get the first time step of each event for each sensor
     start_events = dataset_df[dataset_df.event_index.notnull()]
