@@ -118,7 +118,8 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
 
         # cast to int some columns
         joined_df = joined_df.astype({'EMERGENCY_LANE': 'int', 'LANES': 'int',
-                                        'ROAD_TYPE': 'int', 'EVENT_DETAIL': 'float'})
+                                      'ROAD_TYPE': 'int', 'EVENT_DETAIL': 'int',
+                                      'KEY': 'int', 'KM': 'int', 'event_index':'int'})
 
         """
         if mode == 'train':

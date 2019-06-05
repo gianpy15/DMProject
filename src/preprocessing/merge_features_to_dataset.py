@@ -5,9 +5,10 @@ sys.path.append(os.getcwd())
 from src.features.avg_speed_street import AvgSpeedStreet
 from src.features.avg_speed_sensor import AvgSpeedSensor
 from src.features.avg_speed_sensor_hour import AvgSpeedSensorHour
-
+from src.features.speeds_sensor_days_before import SpeedsSensorDaysBefore
 from src.features.avg_speed_roadtype import AvgSpeedRoadType
 from src.features.avg_speed_roadtype_event import AvgSpeedRoadTypeEvent
+from src.features.weather_clusters import Weather_clusters
 
 
 from src import data
@@ -24,9 +25,9 @@ def merge_single_mode(base_dataset, features_array, default_one_hot=False):
     print(f'df_shape: {base_dataset.shape}')
     for f in features_array:
         if type(f) == tuple:
-            base_dataset = f[0]().join_to(base_dataset, one_hot=f[1])
+            base_dataset = f.join_to(base_dataset, one_hot=f[1])
         else:
-            base_dataset = f().join_to(base_dataset, one_hot=default_one_hot)
+            base_dataset = f.join_to(base_dataset, one_hot=default_one_hot)
         print(f'df_shape: {base_dataset.shape}')
     return base_dataset
 
@@ -34,6 +35,11 @@ def merge(features_array, default_one_hot=False):
     save_path = 'resources/dataset/preprocessed/'
     train_base = data.base_dataset('train')
     test_base = data.base_dataset('test')
+    
+    # instantiate the features
+    for j in range(len(features_array)):
+        features_array[j] = features_array[j]()
+    
     merged_train = merge_single_mode(train_base, features_array, default_one_hot)
     print('train completed \n')
     merged_test = merge_single_mode(test_base, features_array, default_one_hot)
@@ -46,9 +52,10 @@ if __name__ == '__main__':
         AvgSpeedStreet,
         AvgSpeedSensor,
         AvgSpeedSensorHour,
-
-        AvgSpeedRoadTypeEvent,
         AvgSpeedRoadType,
+        AvgSpeedRoadTypeEvent,
+        SpeedsSensorDaysBefore,
+        Weather_clusters,
     ]
 
     merge(features_array)
