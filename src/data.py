@@ -139,73 +139,34 @@ def base_dataset(mode='train'):
 
         print('caching base dataset {}'.format(mode))
         _base_dataset_df[mode] = convert_to_datetime(pd.read_csv(base_dataset_path, parse_dates=True))
-        #_base_dataset_df[mode] = utility.df_to_datetime(_base_dataset_df[mode],
-        #                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
 
     return _base_dataset_df[mode]
 
-def dataset_with_features(mode='train', onehot=True, drop_index_columns=True):
+def dataset_interpolated(mode, onehot=True, drop_index_columns=True):
     check_mode(mode)
+
+    path = os.path.join(_BASE_PATH_PREPROCESSED, f'base_dataframe_{mode}_inferred.csv.gz')
+    dataset = pd.read_csv(path, parse_dates=True, index_col=0)
+
+    return split_X_y(dataset, onehot, drop_index_columns)
+
+def dataset(mode='train', onehot=True, drop_index_columns=True):
+    """
+    Return X and Y of the base dataset
+    """
+    check_mode(mode)
+    #df = base_dataset(mode)
 
     merged_dataset_path = os.path.join(_BASE_PATH_PREPROCESSED, f'merged_dataframe_{mode}.csv.gz')
     if _merged_dataset_df[mode] is None:
         print('caching merged dataset {}'.format(mode))
         _merged_dataset_df[mode] = convert_to_datetime(pd.read_csv(merged_dataset_path, parse_dates=True))
 
-    # retrieve the target values and move them on Y
-    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
-    y = _merged_dataset_df[mode][Y_columns]
+    # SORT BY TIMESTAMP (to replicate their split)
+    #_merged_dataset_df[mode].sort_values('DATETIME_UTC_y_0', inplace=True)
 
-    TO_DROP = Y_columns
-    if drop_index_columns:
-        TO_DROP.extend(['KEY', 'KM', 'event_index'])
+    return split_X_y(_merged_dataset_df[mode], onehot, drop_index_columns)
 
-    df = _merged_dataset_df[mode].drop(TO_DROP, axis=1)
-
-    # find the columns where is present DATETIME and filter them
-    X = df.filter(regex='^((?!DATETIME).)*$')
-
-    if onehot:
-        print('performing onehot')
-        columns_to_onehot = []
-        for col in X.columns:
-            print(col)
-            col_type = df[col].dtype
-            if col_type == object:
-                columns_to_onehot.append(col)
-        X = pd.get_dummies(X, columns=columns_to_onehot)
-    return X, y
-
-def dataset(mode='train', onehot=True, drop_index_columns=True):
-    """
-    Return X and Y of the base dataset
-    """
-    df = base_dataset(mode)
-
-    # retrieve the target values and move them on Y
-    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
-    y = df[Y_columns]
-
-    TO_DROP = Y_columns
-    if drop_index_columns:
-        TO_DROP.extend(['KEY', 'KM', 'event_index'])
-
-    df = df.drop(TO_DROP, axis=1)
-
-    # find the columns where is present DATETIME and filter them
-    #indices = np.nonzero(np.array(list(map(lambda x: x.find('DATETIME'), df.columns))))
-    X = df.filter(regex='^((?!DATETIME).)*$')
-
-    if onehot:
-        print('performing onehot')
-        columns_to_onehot = []
-        for col in X.columns:
-            print(col)
-            col_type = df[col].dtype
-            if col_type == object:
-                columns_to_onehot.append(col)
-        X = pd.get_dummies(X, columns=columns_to_onehot)
-    return X, y
 
 def weather():
     global _weather_df
@@ -230,8 +191,7 @@ def events(mode='train'):
         filepath = f'{_BASE_PATH_PREPROCESSED}/events_{mode}.csv.gz'
         print(f'caching {filepath}')
         _events_df_preprocessed[mode] = pd.read_csv(filepath, engine='c', index_col=0)
-        _events_df_preprocessed[mode] = utility.df_to_datetime(_events_df_preprocessed[mode],
-                                                columns=['START_DATETIME_UTC','END_DATETIME_UTC','DATETIME_UTC'])
+        _events_df_preprocessed[mode] = convert_to_datetime(_events_df_preprocessed[mode])
 
     return _events_df_preprocessed[mode]
 
@@ -245,7 +205,7 @@ def speeds_original(mode='train'):
         filepath = f'{_BASE_PATH_ORIGINALS}/speeds_{mode}.csv.gz'
         print(f'caching {filepath}')
         _speeds_df[mode] = pd.read_csv(filepath, engine='c')
-        _speeds_df[mode] = utility.df_to_datetime(_speeds_df[mode], columns=['DATETIME_UTC'])
+        _speeds_df[mode] = convert_to_datetime(_speeds_df[mode])
 
     return _speeds_df[mode]
 
@@ -259,14 +219,15 @@ def speeds(mode='train', imputed_method='time'):
         filepath = f'{_BASE_PATH_PREPROCESSED}/speeds_{mode}_imputed_{imputed_method}.csv.gz'
         print(f'caching {filepath}')
         _speeds_df_imputed[mode] = pd.read_csv(filepath, engine='c')
-        _speeds_df_imputed[mode] = utility.df_to_datetime(_speeds_df_imputed[mode], columns=['DATETIME_UTC'])
+        _speeds_df_imputed[mode] = convert_to_datetime(_speeds_df_imputed[mode])
 
     return _speeds_df_imputed[mode]
 
 def speed_test_masked():
     global _speed_test_masked
     if _speed_test_masked is None:
-        _speed_test_masked = pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c')
+        _speed_test_masked = convert_to_datetime(pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', 
+                                            index_col=0, parse_dates=True))
     return _speed_test_masked
 
 def weather_original(mode='train'):
@@ -275,7 +236,7 @@ def weather_original(mode='train'):
         filepath = f'{_BASE_PATH_ORIGINALS}/weather_{mode}.csv.gz'
         print(f'caching {filepath}')
         _weather_df[mode] = pd.read_csv(filepath, engine='c')
-        _weather_df[mode] = utility.df_to_datetime(_weather_df[mode], columns=['DATETIME_UTC'])
+        _weather_df[mode] = convert_to_datetime(_weather_df[mode])
 
     return _weather_df[mode]
 
@@ -319,6 +280,31 @@ def distances_proprocessed():
     print('shape of the dataframe is: {}'.format(_distances_df_preprocessed.shape))
     return _distances_df_preprocessed
 
+def split_X_y(dataset, onehot, drop_index_columns):
+    # retrieve the target values and move them on Y
+    Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
+    y = dataset[Y_columns]
+
+    TO_DROP = Y_columns
+    if drop_index_columns:
+        TO_DROP.extend(['KEY', 'KM', 'event_index'])
+
+    df = dataset.drop(TO_DROP, axis=1)
+
+    # find the columns where is present DATETIME and filter them
+    X = df.filter(regex='^((?!DATETIME).)*$')
+
+    if onehot:
+        print('performing onehot')
+        columns_to_onehot = []
+        for col in X.columns:
+            print(col)
+            col_type = df[col].dtype
+            if col_type == object:
+                columns_to_onehot.append(col)
+        X = pd.get_dummies(X, columns=columns_to_onehot)
+
+    return X, y
 
 if __name__ == '__main__':
     dataset()

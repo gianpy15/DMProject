@@ -12,32 +12,34 @@ from src.utils import *
 import src.data as data
 
 
-class AvgSpeedRoadType(FeatureBase):
+class Weekday(FeatureBase):
     
     def __init__(self):
-        name = 'avg_speed_road_type'
-        super(AvgSpeedRoadType, self).__init__(
+        name = 'weekday'
+        super(Weekday, self).__init__(
             name=name)
 
     def extract_feature(self):
-        print('Loading datasets')
         tr = data.speeds_original('train')
         te = data.speed_test_masked()
         speeds = pd.concat([tr, te])
         del tr
         del te
 
-        sensors = data.sensors()
+        print('Extracting min and max timestamps...')
+        min_datetime = speeds.DATETIME_UTC.min()
+        max_datetime = speeds.DATETIME_UTC.max()
         print('Done')
-
-        df = pd.merge(speeds.dropna(), sensors, left_on=[KEY, KM], right_on=[KEY, KM])
-        df[DATETIME] = pd.to_datetime(df.DATETIME_UTC)
-
-        return df[['ROAD_TYPE', 'SPEED_AVG']].groupby('ROAD_TYPE').mean().reset_index()
+        df = pd.DataFrame(pd.date_range(min_datetime, max_datetime, freq='15min').to_series()).reset_index()
+        df[DATETIME] = pd.to_datetime(df['index'])
+        df = df[[DATETIME]]
+        df['WEEK_DAY'] = pd.to_datetime(df[DATETIME]).dt.weekday
+        df['IS_WEEKEND'] = df.WEEK_DAY.map(lambda x: x in [5, 6])
+        return df
 
 
 if __name__ == '__main__':
-    c = AvgSpeedRoadType()
+    c = Weekday()
 
     print('Creating {}'.format(c.name))
     c.save_feature()

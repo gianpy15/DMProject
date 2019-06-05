@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
@@ -19,6 +23,9 @@ class AvgSpeedSensorHour(FeatureBase):
         tr = data.speeds_original('train')
         te = data.speed_test_masked()
         df = pd.concat([tr, te])
+        del tr
+        del te
+        
         df.DATETIME_UTC = df.DATETIME_UTC.dt.strftime('%H:%M:%S')
         return df[['KEY', 'KM', 'DATETIME_UTC', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY', 'KM', 'DATETIME_UTC']).mean().reset_index()\
             .rename(columns={'DATETIME_UTC': 'DATETIME_UTC_SPEED_SENSOR_HOUR',

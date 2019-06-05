@@ -35,14 +35,8 @@ if __name__ == "__main__":
     chain_mode = input('Choose the chain mode (m: multioutput / c: regressorchain): ').lower()
     M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
-    #X, Y = data.dataset(onehot=False, drop_index_columns=True)
-    X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
-
-    # add features
-    # import src.preprocessing.other_features as feat
-    # avg_speed_road_event = feat.avg_speed_for_roadtype_event()
-    # X = X.merge(avg_speed_road_event, how='left', on=['EVENT_TYPE','ROAD_TYPE'])
-    # del avg_speed_road_event
+    #X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
+    X, Y = data.dataset('train', onehot=False)
 
     X.fillna(0, inplace=True)
 
@@ -53,7 +47,7 @@ if __name__ == "__main__":
         'X': X,
         'loss_function': 'MAE',
         'eval_metric': 'MAE',
-        'n_estimators':2000,
+        'n_estimators':3500,
         'depth':6,
         'learning_rate':1,
         'early_stopping_rounds': 100,
@@ -63,14 +57,8 @@ if __name__ == "__main__":
     model = M(catboost)
     model.fit(X, Y)
 
-    def evaluate(X_test, y_test):
-        mask_test = np.all(y_test.notnull(), axis=1)
-
-        y_pred = model.predict(X_test[mask_test])
-        return mean_absolute_error(y_test[mask_test], y_pred)
-
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
-    mae = evaluate(X_test, y_test)
+    mae = inout.evaluate(model, X_test, y_test)
     print()
     print(mae)
 

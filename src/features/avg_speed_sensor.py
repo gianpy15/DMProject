@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
@@ -18,6 +22,9 @@ class AvgSpeedSensor(FeatureBase):
         tr = data.speeds_original('train')
         te = data.speed_test_masked()
         df = pd.concat([tr, te])
+        del tr
+        del te
+        
         return df[['KEY', 'KM', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY', 'KM']).mean().reset_index()\
             .rename(columns={'SPEED_AVG': 'avg_speed_sensor',\
                              'SPEED_SD': 'avg_speed_sd_sensor', \
