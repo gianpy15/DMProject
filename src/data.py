@@ -162,7 +162,8 @@ def dataset(mode='train', onehot=True, drop_index_columns=True):
         print('caching merged dataset {}'.format(mode))
         _merged_dataset_df[mode] = convert_to_datetime(pd.read_csv(merged_dataset_path, parse_dates=True))
 
-    _merged_dataset_df[mode].sort_values('DATETIME_UTC_y_0', inplace=True)
+    # SORT BY TIMESTAMP (to replicate their split)
+    #_merged_dataset_df[mode].sort_values('DATETIME_UTC_y_0', inplace=True)
 
     return split_X_y(_merged_dataset_df[mode], onehot, drop_index_columns)
 

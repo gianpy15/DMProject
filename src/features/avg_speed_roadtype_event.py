@@ -31,7 +31,7 @@ class AvgSpeedRoadTypeEvent(FeatureBase):
         del tr
         del te
 
-        data.flush_cache()
+        #data.flush_cache()
 
         sensors = data.sensors()
         merged = utility.merge_speed_events(speeds, events)
@@ -56,5 +56,5 @@ if __name__ == '__main__':
     print('Creating {}'.format(c.name))
     c.save_feature()
 
-    print(c.read_feature)
+    print(c.read_feature())
 
