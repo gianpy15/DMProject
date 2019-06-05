@@ -9,7 +9,7 @@ class OptimizerWrapper:
     TO DO
     """
 
-    def __init__(self, algorithm_class, mode, cluster):
+    def __init__(self, algorithm_class):
         self.space, self.objective = algorithm_class.get_optimize_params()
     def optimize_bayesian(self):
         """

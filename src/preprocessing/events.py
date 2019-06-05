@@ -8,12 +8,12 @@ import pandas as pd
 import src.utility as utility
 import src.utils.folder as folder
 
-def preprocess(km_influence_before=5, km_influence_after=2):
+def preprocess(km_influence_before=2, km_influence_after=2):
     """ Preprocess the events dataframe for train and test:
     - KM_START and KM_END are set to be ordered so that KM_START is less than KM_END
-    - if KM_START is equal to KM_END, a new column is created containing the original value and KM_START
-        is decreased by km_influence_before and KM_END is increased by km_influence_after to create a valid
-        range
+    - if KM_START is equal to KM_END, a new column is created containing the original value
+    - ALL events KM_START is decreased by km_influence_before
+    - ALL events KM_END is increased by km_influence_after
     - expand the timestamps creating new rows for the intermediate timestamps (ex: event from 13:12 to 13:43 will be expanded
         to 3 rows: 13:15, 13:30, 13:45)
     """
@@ -31,13 +31,12 @@ def preprocess(km_influence_before=5, km_influence_after=2):
 
         # find the events for which KM_START and KM_END coincide
         mask_km_start_equal_km_end = (events_df['KM_START'] == events_df['KM_END'])
-
         # create a new column containing the value of KM_START and KM_END, NaN when the 2 values are not equal
         events_df.loc[mask_km_start_equal_km_end, 'KM_EVENT'] = events_df.loc[mask_km_start_equal_km_end, 'KM_START']
 
-        # modifiy KM_START and KM_END to be in the range of 5km
-        events_df.loc[mask_km_start_equal_km_end, 'KM_START'] -= km_influence_before
-        events_df.loc[mask_km_start_equal_km_end, 'KM_END'] += km_influence_after
+        # modifiy KM_START and KM_END for all the events
+        events_df['KM_START'] -= km_influence_before
+        events_df['KM_END'] += km_influence_after
 
         # expand the timestamps
         events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
