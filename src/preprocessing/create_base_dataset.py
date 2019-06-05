@@ -10,7 +10,7 @@ import src.utility as utility
 import psutil
 
 
-def create_base_dataset(steps_behind_event, steps_after_event=3, validation_split=0.2): #, speed_imputed=True):
+def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validation_split=0.2): #, speed_imputed=True):
     """
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
@@ -25,22 +25,22 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     sensors = data.sensors()
     weather = data.weather()
 
-    for mode in ['train','test']:
+    for t in ['train','test']:
         # - speeds
         # if speed_imputed:
         #     s = data.speeds(mode).merge(sensors, how='left')
         # else:
         print('Merging speeds and events...')
-        e = data.events(mode)
-        se = utility.merge_speed_events(data.speeds_original(mode), e)
+        e = data.events(t)
+        s = data.speeds_original(t)
+        se = utility.merge_speed_events(s, e)
         
         print('Done')
-        #data.flush_cache()
         print_memory_usage()
 
         # create the time windows for each event
         print('Creating time windows for events...')
-        joined_df = utility.time_windows_event(se, mode=mode, steps_behind=steps_behind_event, steps_after=steps_after_event)
+        joined_df = utility.time_windows_event(se, mode=t, steps_behind=steps_behind_event, steps_after=steps_after_event)
 
         # add other dataframes
         # - events
@@ -130,13 +130,14 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
             # valid_df = joined_df.loc[validation_indices]
         """
 
-        # save the base structure
+        # save the base dataset
         filename = 'base_dataframe_{}.csv.gz'.format(mode)
         filepath = os.path.join(data._BASE_PATH_PREPROCESSED, filename)
         print('Saving base dataframe to {}'.format(filepath))
         joined_df.to_csv(filepath, index=False, compression='gzip')
         print('Done\n')    
         del joined_df
+
 
 def print_memory_usage():
     process = psutil.Process(os.getpid())
