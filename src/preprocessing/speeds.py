@@ -8,6 +8,7 @@ import pandas as pd
 
 import src.data as data
 import src.utility as utility
+from shutil import copyfile
 import src.utils.folder as folder
 from src.utils import *
 
@@ -107,6 +108,13 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     path = data.get_path_preprocessed('local', 'test', 'speeds_test_masked.csv.gz')
     speeds_filtered.to_csv(path, compression='gzip')
 
+def create_full_test_speeds():
+    print('Saving full test speeds...')
+    source_path = data.get_path_originals('speeds_2019.csv.gz')
+    dest_path = data.get_path_preprocessed('full', 'test', 'speeds.csv.gz')
+    copyfile(source_path, dest_path)
+    print()
+
 if __name__ == '__main__':
     # parser = setup_parser()
     # args = parser.parse_args(sys.argv[1:])
@@ -114,3 +122,4 @@ if __name__ == '__main__':
 
     # preprocess speeds test
     create_speeds_test_for_unbiased_features(data.speeds_original('test'))
+    create_full_test_speeds()

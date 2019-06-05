@@ -16,7 +16,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
     """
-    print(f'Creating base dataset for {mode} with timewindows ({steps_behind_event}, {steps_after_event})')
+    print(f'Creating base dataset for {mode.upper()} with timewindows ({steps_behind_event}, {steps_after_event})')
 
     # load dataframes to be joined
     # - sensors
@@ -24,13 +24,18 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
     weather = data.weather()
 
     for t in ['train','test']:
+        print()
+        print('Creating dataset', t.upper())
         # - speeds
         # if speed_imputed:
         #     s = data.speeds(mode).merge(sensors, how='left')
         # else:
         print('Merging speeds and events...')
-        e = data.events(t)
-        s = data.speeds_original(t)
+        e = data.events(mode, t)
+        if mode == 'local':
+            s = data.speeds_original(t)
+        else:
+            raise NotImplementedError()
         se = utility.merge_speed_events(s, e)
         
         print('Done')
@@ -131,13 +136,11 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
 
         # save the base dataset
         filepath = data.get_path_preprocessed(mode, t, 'base_dataset.csv.gz')
-        # check if the folder exsist, otherwise create it
-        utility.check_folder(filepath)
 
         print('Saving base dataframe to {}'.format(filepath))
         joined_df.to_csv(filepath, index=False, compression='gzip')
-        print('Done')
         del joined_df
+        print('Done')
 
 
 def print_memory_usage():
