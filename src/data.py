@@ -91,11 +91,11 @@ cache = {
 # BASE paths and path retrieval
 _BASE_PATH = 'resources/dataset/'
 def get_path_originals(filename):
-    filepath = resources_path(_BASE_PATH, 'originals', filename)
+    filepath = os.path.join(_BASE_PATH, 'originals', filename)
     print(f'caching {filepath}')
     return filepath
 def get_path_preprocessed(mode, t, filename):
-    filepath = resources_path(_BASE_PATH, 'preprocessed', mode, t, filename)
+    filepath = os.path.join(_BASE_PATH, 'preprocessed', mode, t, filename)
     print(f'caching {filepath}')
     return filepath
 # ========
@@ -104,7 +104,7 @@ def get_path_preprocessed(mode, t, filename):
 def events_original(t='train'):
     check_t(t)
     if cache['originals'][t]['events'] is None:
-        filename = 'events_2019.csv' if t == 'test2' else 'events.csv.gz'
+        filename = 'events_2019.csv' if t == 'test2' else f'events_{t}.csv.gz'
         filepath = get_path_originals(filename)
         cache['originals'][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
@@ -207,7 +207,7 @@ def dataset(mode='local', t='train', onehot=True, drop_index_columns=True):
         # SORT BY TIMESTAMP (to replicate their split)
         cache['preprocessed'][mode][t]['dataset'].sort_values('DATETIME_UTC_y_0', inplace=True)
 
-    return split_dataset_X_ycache['preprocessed'][mode][t]['dataset'], onehot, drop_index_columns)
+    return split_dataset_X_y(cache['preprocessed'][mode][t]['dataset'], onehot, drop_index_columns)
 # ========
 
 
