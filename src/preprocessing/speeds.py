@@ -84,10 +84,10 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     Save a new dataframe without those speed measures.
     """
     print('Creating speeds test without target speeds...')
-    e = data.events('test')
+    e = data.events(mode='local', t='test')
     joined_df = utility.merge_speed_events(speeds_test, e)
 
-    speeds_target = utility.time_windows_event(joined_df, steps_behind=0, steps_after=3, mode='test')
+    speeds_target = utility.time_windows_event(joined_df, t='test', steps_behind=0, steps_after=3)
     speeds_target.dropna(subset=['KEY'], inplace=True)
     # build a dataframe containing the target speeds, so that it can be joined
     # to the original speeds and reveal the target speeds rows
@@ -104,7 +104,8 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     speeds_filtered.drop('istarget', axis=1, inplace=True)
     
     # save
-    speeds_filtered.to_csv('resources/dataset/preprocessed/speeds_test_masked.csv.gz', compression='gzip')
+    path = data.get_path_preprocessed('local', 'test', 'speeds_test_masked.csv.gz')
+    speeds_filtered.to_csv(path, compression='gzip')
 
 if __name__ == '__main__':
     # parser = setup_parser()
