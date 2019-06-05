@@ -1,5 +1,5 @@
 from src.utils.paths import resources_path
-
+import src.utils.folder as folder
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -92,10 +92,12 @@ cache = {
 _BASE_PATH = 'resources/dataset/'
 def get_path_originals(filename):
     filepath = os.path.join(_BASE_PATH, 'originals', filename)
+    folder.create_if_does_not_exist(filepath)
     print(f'caching {filepath}')
     return filepath
 def get_path_preprocessed(mode, t, filename):
     filepath = os.path.join(_BASE_PATH, 'preprocessed', mode, t, filename)
+    folder.create_if_does_not_exist(filepath)
     print(f'caching {filepath}')
     return filepath
 # ========
@@ -104,7 +106,7 @@ def get_path_preprocessed(mode, t, filename):
 def events_original(t='train'):
     check_t(t)
     if cache['originals'][t]['events'] is None:
-        filename = 'events_2019.csv' if t == 'test2' else f'events_{t}.csv.gz'
+        filename = 'events_2019.csv.gz' if t == 'test2' else f'events_{t}.csv.gz'
         filepath = get_path_originals(filename)
         cache['originals'][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
@@ -123,7 +125,7 @@ def events(mode='local', t='train'):
 def speeds_original(t='train'):
     check_t(t)
     if cache['originals'][t]['speeds'] is None:
-        filename = 'speeds_2019.csv' if t == 'test2' else 'speeds_{t}.csv.gz'
+        filename = 'speeds_2019.csv.gz' if t == 'test2' else 'speeds_{t}.csv.gz'
         filepath = get_path_originals(filename)
         cache['originals'][t]['speeds'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
@@ -142,7 +144,7 @@ def speeds(mode='local', t='train'):
 def weather_original(t='train'):
     check_t(t)
     if cache['originals'][t]['weather'] is None:
-        filename = 'weather_2019.csv' if t == 'test2' else 'weather_{t}.csv.gz'
+        filename = 'weather_2019.csv.gz' if t == 'test2' else 'weather_{t}.csv.gz'
         filepath = get_path_originals(filename)
         cache['originals'][t]['weather'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 

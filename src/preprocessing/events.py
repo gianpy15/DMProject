@@ -1,14 +1,42 @@
 import os
 import sys
 sys.path.append(os.getcwd())
-
 import numpy as np
 import pandas as pd
-
+from src import data
 import src.utility as utility
 import src.utils.folder as folder
 
-def preprocess(km_influence_before=2, km_influence_after=2):
+def function(events_df, km_influence_before, km_influence_after):
+    # reorder KM_START and KM_END, such that KM_START <= KM_END
+    start_km = np.minimum(events_df['KM_START'].values, events_df['KM_END'].values)
+    end_km = np.maximum(events_df['KM_START'].values, events_df['KM_END'].values)
+    events_df['KM_START'] = start_km
+    events_df['KM_END'] = end_km
+
+    # find the events for which KM_START and KM_END coincide
+    mask_km_start_equal_km_end = (events_df['KM_START'] == events_df['KM_END'])
+    # create a new column containing the value of KM_START and KM_END, NaN when the 2 values are not equal
+    events_df.loc[mask_km_start_equal_km_end, 'KM_EVENT'] = events_df.loc[mask_km_start_equal_km_end, 'KM_START']
+
+    # modifiy KM_START and KM_END for all the events
+    events_df['KM_START'] -= km_influence_before
+    events_df['KM_END'] += km_influence_after
+
+    # expand the timestamps
+    events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+
+    events_df['START_DATETIME_UTC'] = pd.to_datetime(events_df['START_DATETIME_UTC'], unit='s')
+    events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
+    events_df['DATETIME_UTC'] = pd.to_datetime(events_df['DATETIME_UTC'], unit='s')
+
+    # put into event detail a unique value when is NaN
+    events_df.EVENT_DETAIL = events_df.EVENT_DETAIL.fillna(-1)
+
+    return events_df
+
+
+def preprocess(mode='local', km_influence_before=2, km_influence_after=2):
     """ Preprocess the events dataframe for train and test:
     - KM_START and KM_END are set to be ordered so that KM_START is less than KM_END
     - if KM_START is equal to KM_END, a new column is created containing the original value
@@ -18,41 +46,33 @@ def preprocess(km_influence_before=2, km_influence_after=2):
         to 3 rows: 13:15, 13:30, 13:45)
     """
     print('Preprocessing events...')
-    
-    for mode in ['train','test']:
-        filename = 'events_{}.csv.gz'
-        events_df = pd.read_csv(os.path.join('resources/dataset/originals', filename.format(mode)))
 
-        # reorder KM_START and KM_END, such that KM_START <= KM_END
-        start_km = np.minimum(events_df['KM_START'].values, events_df['KM_END'].values)
-        end_km = np.maximum(events_df['KM_START'].values, events_df['KM_END'].values)
-        events_df['KM_START'] = start_km
-        events_df['KM_END'] = end_km
+    if mode == 'local':
+        for t in ['train','test']:
+            events_df = data.events_original(t)
 
-        # find the events for which KM_START and KM_END coincide
-        mask_km_start_equal_km_end = (events_df['KM_START'] == events_df['KM_END'])
-        # create a new column containing the value of KM_START and KM_END, NaN when the 2 values are not equal
-        events_df.loc[mask_km_start_equal_km_end, 'KM_EVENT'] = events_df.loc[mask_km_start_equal_km_end, 'KM_START']
+            events_df = function(events_df, km_influence_before, km_influence_after)
 
-        # modifiy KM_START and KM_END for all the events
-        events_df['KM_START'] -= km_influence_before
-        events_df['KM_END'] += km_influence_after
+            # save the df
+            path = data.get_path_preprocessed(mode, t, 'events.csv.gz')
 
-        # expand the timestamps
-        events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+            print('saving {}'.format(path))
+            events_df.to_csv(path, index=False, compression='gzip')
 
-        events_df['START_DATETIME_UTC'] = pd.to_datetime(events_df['START_DATETIME_UTC'], unit='s')
-        events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
-        events_df['DATETIME_UTC'] = pd.to_datetime(events_df['DATETIME_UTC'], unit='s')
+    elif mode == 'full':
+        events_local_train_preprocessed = data.events('local', 'train')
+        events_local_test_preprocessed = data.events('local', 'test')
+        events_full_train_preprocessed = pd.concat([events_local_train_preprocessed, events_local_test_preprocessed]).reset_index(drop=True)
+        
+        path = data.get_path_preprocessed(mode, 'train', 'events.csv.gz')
+        events_full_train_preprocessed.to_csv(path, index=False, compression='gzip')
 
-        # put into event detail a unique value when is NaN
-        events_df.EVENT_DETAIL = events_df.EVENT_DETAIL.fillna(-1)  
-
-        # save the df
-        preprocessing_folder = 'resources/dataset/preprocessed'
-        path = os.path.join(preprocessing_folder, filename.format(mode))
-        folder.create_if_does_not_exist(preprocessing_folder)
+        events_df = data.events_original('test2')
+        events_df = function(events_df, km_influence_before, km_influence_after)
+        path = data.get_path_preprocessed(mode, 'test', 'events.csv.gz')
+        print('saving {}'.format(path))
         events_df.to_csv(path, index=False, compression='gzip')
 
 if __name__ == "__main__":
-    preprocess()
+    preprocess('local')
+    preprocess('full')
