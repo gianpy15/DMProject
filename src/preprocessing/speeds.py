@@ -108,12 +108,23 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     path = data.get_path_preprocessed('local', 'test', 'speeds_test_masked.csv.gz')
     speeds_filtered.to_csv(path, compression='gzip')
 
-def create_full_test_speeds():
+def create_speeds_train_full():
+    print('Saving full train speeds...')
+    speeds_train_local = data.speeds_original('train')
+    speeds_test_original = data.speeds_original('test')
+    speeds_train_full = pd.concat([speeds_train_local, speeds_test_original]).reset_index(drop=True)
+    path = data.get_path_preprocessed('full', 'train', 'speeds.csv.gz')
+    speeds_train_full.to_csv(path, compression='gzip', index=False)
+    print()
+
+def create_speeds_full_test():
     print('Saving full test speeds...')
     source_path = data.get_path_originals('speeds_2019.csv.gz')
     dest_path = data.get_path_preprocessed('full', 'test', 'speeds.csv.gz')
     copyfile(source_path, dest_path)
     print()
+    
+
 
 if __name__ == '__main__':
     # parser = setup_parser()
@@ -122,4 +133,6 @@ if __name__ == '__main__':
 
     # preprocess speeds test
     create_speeds_test_for_unbiased_features(data.speeds_original('test'))
-    create_full_test_speeds()
+
+    create_speeds_train_full()
+    create_speeds_full_test()
