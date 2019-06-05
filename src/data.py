@@ -11,6 +11,7 @@ from src.utils.datetime_converter import convert_to_datetime
 # base path to original data
 _BASE_PATH_ORIGINALS = 'resources/dataset/originals'
 _BASE_PATH_PREPROCESSED = 'resources/dataset/preprocessed'
+_BASE_PATH_TEST = 'resources/dataset/originals/test'
 
 # initialize variable for caching
 _distances_df_original = None
@@ -79,6 +80,18 @@ def flush_cache():
 
 def check_mode(mode):
     assert mode in ['train', 'test']
+
+def events_test():
+    return pd.read_csv(f'{_BASE_PATH_TEST}/events_2019.csv')
+
+def speeds_test():
+    return pd.read_csv(f'{_BASE_PATH_TEST}/speeds_2019.csv')
+
+def weather_test():
+    return pd.read_csv(f'{_BASE_PATH_TEST}/weather_2019.csv')
+
+def target_test():
+    return pd.read_csv(f'{_BASE_PATH_TEST}/speeds_evaluation__only_datetimes__2019.csv')
 
 def base_structure(mode='train'):
     assert mode in ['train', 'test', 'full']
