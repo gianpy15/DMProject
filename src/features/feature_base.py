@@ -47,7 +47,7 @@ class FeatureBase(ABC):
         """
         overwrite_if_exists: if true overwrite without asking; if false do not overwrite, if None ask before overwrite
         """
-        path = 'resources/dataset/preprocessed/features/{}/features.csv'.format(self.name)
+        path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
         if os.path.exists(path):
             if overwrite_if_exists == None:
                 choice = yesno_choice('The feature \'{}\' already exists. Want to recreate?'.format(self.name))
@@ -57,7 +57,7 @@ class FeatureBase(ABC):
                 return
         df = self.extract_feature()
         check_folder(path)
-        df.to_csv(path, index=False)
+        df.to_csv(path, index=False, compression='gzip')
 
     def post_loading(self, df):
         """ Callback called after loading of the dataframe from csv. Override to provide some custom processings. """
@@ -75,7 +75,7 @@ class FeatureBase(ABC):
         if one_hot = False, it returns it as was saved.
         if one_hot = True, returns the onehot of the categorical columns, by means of self.columns_to_onehot
         """
-        path = 'resources/dataset/preprocessed/features/{}/features.csv'.format(self.name)
+        path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
         if not os.path.exists(path):
             choice = yesno_choice('feature \'{}\' does not exist. want to create?'.format(self.name))
             if choice == 'y':
@@ -83,7 +83,7 @@ class FeatureBase(ABC):
             else:
                 return
 
-        df = pd.read_csv(path, index_col=None)
+        df = pd.read_csv(path, index_col=None, engine='c')
 
         print('{} feature read'.format(self.name))
 
