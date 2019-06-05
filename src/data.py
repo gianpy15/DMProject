@@ -113,7 +113,7 @@ def events(mode='local', t='train'):
     check_mode_and_t(mode, t)
     if cache['preprocessed'][mode][t]['events'] is None:
         filename = 'events_2019.csv' if t == 'test2' else 'events_{t}.csv.gz'
-        filepath = get_path_originals(filename)
+        filepath = get_path_preprocessed(filename)
         cache['preprocessed'][mode][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed'][mode][t]['events']
