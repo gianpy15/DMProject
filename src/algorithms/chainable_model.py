@@ -57,13 +57,15 @@ class ChainableModel():
         # at each step of the chain, so the columns variable should be adapted accordingly
         columns = self.columns
         order = X.shape[1] - len(columns)
+        prev_pred_columns=[]
         if order > 0:
             # add additional "dummy" columns to the dataframe
             prev_pred_columns = ['$step_{}$'.format(i) for i in range(order)]
             columns.extend(prev_pred_columns)
 
+
         # rebuild the original dataframe with the real dtypes for each column
-        X = pd.DataFrame(X, columns=columns).astype(self.col_dtypes)
+        X = pd.DataFrame(X, columns=columns).astype(self.col_dtypes).astype({col:'float'for col in prev_pred_columns})
         X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=self.val_split, shuffle=False)
 
         # filters NaN targets in train and validation

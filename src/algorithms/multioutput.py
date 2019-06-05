@@ -150,7 +150,7 @@ def check_X_y(X, y, accept_sparse=False, accept_large_sparse=True,
                     warn_on_dtype=warn_on_dtype,
                     estimator=estimator)
     if multi_output:
-        y = check_array(y, 'csr', force_all_finite=True, ensure_2d=False, dtype=dtype)
+        y = check_array(y, 'csr', force_all_finite=False, ensure_2d=False, dtype=dtype)
     else:
         y = column_or_1d(y, warn=True)
         assert_all_finite(y)

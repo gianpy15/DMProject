@@ -42,7 +42,7 @@ def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None):
     return df
 
 
-def reduce_mem_usage_FA_IL_PUTTANAIO(df):
+def reduce_mem_usage(df):
     """
     call on a dataframe to reduce its memory consumption
     :param df:
