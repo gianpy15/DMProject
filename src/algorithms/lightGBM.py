@@ -12,8 +12,19 @@ from skopt.space import Real, Integer, Categorical
 from src.utility import reduce_mem_usage
 from src.algorithms.chainable_model import ChainableModel
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error
 
 
+def evaluate(model, X_test, y_test):
+    mask_test = np.all(y_test.notnull(), axis=1)
+    print('number of valid samples:', (mask_test*1).sum())
+
+    y_pred = model.predict(X_test[mask_test])
+
+    for i in range(4):
+        print(f'MAE columns {i}\n')
+        print(mean_absolute_error(y_test[mask_test].values[:, i], y_pred[:, i]))
+        print('\n')
 
 class lightGBM(ChainableModel):
 
@@ -27,10 +38,21 @@ class lightGBM(ChainableModel):
     def fit_model(self, X, y, X_val, y_val):
         self.model.fit(X, y, eval_set=[(X_val, y_val)], eval_metric='regression_l1', verbose=1,
                            eval_names='validation_set')
-        fig, ax = plt.subplots(figsize=(12,10))
+        fig, ax = plt.subplots(figsize=(12, 10))
         a = lgb.plot_importance(self.model.booster_, ax=ax)
         plt.subplot(a)
         plt.show()
+
+    def predict(self, X):
+        X = pd.DataFrame(X)
+
+        for c in X.columns:
+            try:
+                X[c]=X[c].astype('float')
+            except ValueError:
+                X[c]=X[c].astype('category')
+        preds = self.model.predict(X)
+        return preds
 
     def validate(self):
     #TODO: DO NOT DELETE IS USEFULL FOR FINISH THE FIT METHOD IN CASE OF VALIDATION
@@ -69,17 +91,22 @@ if __name__ == '__main__':
     weather_cols = [f'WEATHER_{i}' for i in range(-10, 0)]
     categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE'] + weather_cols
     X, y = data.dataset_with_features('train', onehot=False)
-    X.fillna(0, inplace=True)
+    #X.fillna(0, inplace=True)
     X = reduce_mem_usage(X)
+
+    X_test, y_test =data.dataset_with_features('test', onehot=False)
+    #X_test.fillna(0, inplace=True)
+    X_test=reduce_mem_usage(X_test)
+    #y_test=reduce_mem_usage(y_test)
 
 
     params_dict = {
         'objective': 'regression_l1',
         'boosting_type':'gbdt',
         'num_leaves': 21,
-        'max_depth': 8,
+        'max_depth': -1,
         'learning_rate': 0.01,
-        'n_estimators': 1000,
+        'n_estimators': 1500,
         'subsample_for_bin': 200000,
         'class_weights': None,
         'min_split_gain': 0.001,
@@ -95,13 +122,14 @@ if __name__ == '__main__':
         'silent': False,
         'importance_type': 'split',
         'metric': 'None',
-        #'categorical_feature':'name:'+','.join(categorical_cols),
+        'categorical_feature':'name:'+','.join(categorical_cols),
     }
 
     params_dict['X'] = X
     model = lightGBM(params_dict=params_dict)
-    model_wrapper = RegressorChain(model)
+    model_wrapper = MultiOutputRegressor(model)
     model_wrapper.fit(X, y)
+    print(evaluate(model_wrapper, X_test, y_test))
 
 
 
