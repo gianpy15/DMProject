@@ -82,7 +82,7 @@ def check_mode(mode):
     assert mode in ['train', 'test']
 
 def events_test():
-    return pd.read_csv(f'{_BASE_PATH_TEST}/events_2019.csv')
+    return convert_to_datetime(pd.read_csv(f'{_BASE_PATH_TEST}/events_2019.csv'))
 
 def speeds_test():
     return pd.read_csv(f'{_BASE_PATH_TEST}/speeds_2019.csv')
@@ -91,7 +91,9 @@ def weather_test():
     return pd.read_csv(f'{_BASE_PATH_TEST}/weather_2019.csv')
 
 def target_test():
-    return pd.read_csv(f'{_BASE_PATH_TEST}/speeds_evaluation__only_datetimes__2019.csv')
+    target = pd.read_csv(f'{_BASE_PATH_TEST}/speeds_evaluation__only_datetimes__2019.csv')
+    target['DATETIME_UTC']=pd.to_datetime(target['DATETIME_UTC'])
+    return target
 
 def base_structure(mode='train'):
     assert mode in ['train', 'test', 'full']
