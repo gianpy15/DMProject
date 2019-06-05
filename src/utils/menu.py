@@ -120,6 +120,9 @@ def yesno_choice(title, callback_yes=None, callback_no=None):
         else:
             print('Wrong choice buddy ;) Retry:')
     
+def mode_selection(exitable=False):
+    """ Quick menu for mode selection. Return 'full' or 'local'. """
+    return single_choice('Choose a mode:', ['full','local'], exitable=exitable)
 
 def clear():
     os.system('clear')

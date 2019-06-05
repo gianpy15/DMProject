@@ -7,6 +7,7 @@ import numpy as np
 import random
 import src.data as data
 import src.utility as utility
+import src.utils.menu as menu
 import psutil
 
 
@@ -15,10 +16,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
     Create the dataframe containing the road measurements for every timestamp and related
     additional information about sensors, events and weather
     """
-    print(f'Creating base dataset with timewindows ({steps_behind_event}, {steps_after_event})')
-
-    # check if the folder exsist, otherwise create it
-    utility.check_folder(data._BASE_PATH_PREPROCESSED)
+    print(f'Creating base dataset for {mode} with timewindows ({steps_behind_event}, {steps_after_event})')
 
     # load dataframes to be joined
     # - sensors
@@ -40,7 +38,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
 
         # create the time windows for each event
         print('Creating time windows for events...')
-        joined_df = utility.time_windows_event(se, mode=t, steps_behind=steps_behind_event, steps_after=steps_after_event)
+        joined_df = utility.time_windows_event(se, t=t, steps_behind=steps_behind_event, steps_after=steps_after_event)
 
         # add other dataframes
         # - events
@@ -132,11 +130,13 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
         """
 
         # save the base dataset
-        filename = 'base_dataframe_{}.csv.gz'.format(mode)
-        filepath = os.path.join(data._BASE_PATH_PREPROCESSED, filename)
+        filepath = data.get_path_preprocessed(mode, t, 'base_dataset.csv.gz')
+        # check if the folder exsist, otherwise create it
+        utility.check_folder(filepath)
+
         print('Saving base dataframe to {}'.format(filepath))
         joined_df.to_csv(filepath, index=False, compression='gzip')
-        print('Done\n')    
+        print('Done')
         del joined_df
 
 
@@ -146,4 +146,5 @@ def print_memory_usage():
 
 
 if __name__ == '__main__':
-    create_base_dataset(steps_behind_event=4, steps_after_event=3)
+    mode = menu.mode_selection()
+    create_base_dataset(mode, steps_behind_event=4, steps_after_event=3)

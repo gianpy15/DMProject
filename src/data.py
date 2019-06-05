@@ -113,7 +113,7 @@ def events(mode='local', t='train'):
     check_mode_and_t(mode, t)
     if cache['preprocessed'][mode][t]['events'] is None:
         filename = 'events_2019.csv' if t == 'test2' else 'events_{t}.csv.gz'
-        filepath = get_path_originals(filename)
+        filepath = get_path_preprocessed(filename)
         cache['preprocessed'][mode][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed'][mode][t]['events']
@@ -193,7 +193,7 @@ def distances():
 def base_dataset(mode='local', t='train'):
     check_mode_and_t(mode, t)
     if cache['preprocessed'][mode][t]['base_dataset'] is None:
-        filepath = get_path_preprocessed(mode, t, 'base_dataframe_{t}.csv.gz')
+        filepath = get_path_preprocessed(mode, t, 'base_dataset.csv.gz')
         cache['preprocessed'][mode][t]['base_dataset'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed'][mode][t]['base_dataset']
@@ -201,7 +201,7 @@ def base_dataset(mode='local', t='train'):
 def dataset(mode='local', t='train', onehot=True, drop_index_columns=True):
     check_mode_and_t(mode, t)
     if cache['preprocessed'][mode][t]['dataset'] is None:
-        filepath = get_path_originals('merged_dataframe_{t}.csv.gz')
+        filepath = get_path_preprocessed('merged_dataset.csv.gz')
         cache['preprocessed'][mode][t]['dataset'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
         
         # SORT BY TIMESTAMP (to replicate their split)
