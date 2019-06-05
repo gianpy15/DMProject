@@ -1,10 +1,11 @@
 import sys
 import os
 sys.path.append(os.getcwd())
-
+from src.utils.datetime_converter import convert_to_datetime
 from src.features.feature_base import FeatureBase
 from src import data
 import pandas as pd
+from tqdm import tqdm
 
 class SpeedsSensorDaysBefore(FeatureBase):
     """
@@ -26,7 +27,7 @@ class SpeedsSensorDaysBefore(FeatureBase):
         del tr
         f = s[['KEY', 'DATETIME_UTC', 'KM']].copy()
         s = s.rename(columns={'DATETIME_UTC': 'DATETIME_UTC_drop'})
-        for i in range(self.n_days_before):
+        for i in tqdm(range(1, self.n_days_before+1)):
             colname = 'DATETIME_UTC_{}_D'.format(i)
             f[colname] = f.DATETIME_UTC - pd.Timedelta(days=i)
             f = pd.merge(f, s, how='left', left_on=['KEY', 'KM', colname], \
@@ -38,6 +39,10 @@ class SpeedsSensorDaysBefore(FeatureBase):
                             'SPEED_MAX': 'SPEED_MAX_{}_DAY_BEFORE'.format(i),
                             'N_VEHICLES': 'N_VEHICLES_{}_DAY_BEFORE'.format(i)})
         return f.rename(columns={'DATETIME_UTC': 'DATETIME_UTC_y_0'})
+
+    def join_to(self, df, one_hot=False):
+        f = convert_to_datetime(self.read_feature())
+        return pd.merge(df, f, how='left')
 
 if __name__ == '__main__':
     print('how many days before do you want?')
