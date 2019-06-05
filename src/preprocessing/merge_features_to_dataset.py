@@ -5,6 +5,11 @@ sys.path.append(os.getcwd())
 from src.features.avg_speed_street import AvgSpeedStreet
 from src.features.avg_speed_sensor import AvgSpeedSensor
 from src.features.avg_speed_sensor_hour import AvgSpeedSensorHour
+
+from src.features.avg_speed_roadtype import AvgSpeedRoadType
+from src.features.avg_speed_roadtype_event import AvgSpeedRoadTypeEvent
+
+
 from src import data
 
 """
@@ -41,6 +46,9 @@ if __name__ == '__main__':
         AvgSpeedStreet,
         AvgSpeedSensor,
         AvgSpeedSensorHour,
+
+        AvgSpeedRoadTypeEvent,
+        AvgSpeedRoadType,
     ]
 
     merge(features_array)

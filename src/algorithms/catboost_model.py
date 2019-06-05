@@ -36,13 +36,7 @@ if __name__ == "__main__":
     M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
     #X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
-    X, Y = data.dataset_interpolated('train', onehot=False)
-
-    # add features
-    # import src.preprocessing.other_features as feat
-    # avg_speed_road_event = feat.avg_speed_for_roadtype_event()
-    # X = X.merge(avg_speed_road_event, how='left', on=['EVENT_TYPE','ROAD_TYPE'])
-    # del avg_speed_road_event
+    X, Y = data.dataset('train', onehot=False)
 
     X.fillna(0, inplace=True)
 
@@ -53,7 +47,7 @@ if __name__ == "__main__":
         'X': X,
         'loss_function': 'MAE',
         'eval_metric': 'MAE',
-        'n_estimators':2000,
+        'n_estimators':3500,
         'depth':6,
         'learning_rate':1,
         'early_stopping_rounds': 100,
@@ -64,7 +58,7 @@ if __name__ == "__main__":
     model.fit(X, Y)
 
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
-    mae = inout.evaluate(X_test, y_test)
+    mae = inout.evaluate(model, X_test, y_test)
     print()
     print(mae)
 

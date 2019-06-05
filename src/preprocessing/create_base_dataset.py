@@ -21,11 +21,10 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
     utility.check_folder(data._BASE_PATH_PREPROCESSED)
 
     # load dataframes to be joined
-    # - base structure
-    #base = data.base_structure(mode)
     # - sensors
     sensors = data.sensors()
     weather = data.weather()
+
     for mode in ['train','test']:
         # - speeds
         # if speed_imputed:
@@ -33,20 +32,25 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
         # else:
         print('Merging speeds and events...')
         e = data.events(mode)
-        s = utility.merge_speed_events(data.speeds_original(mode), e)
-
-        s = s.merge(sensors, how='left')
+        se = utility.merge_speed_events(data.speeds_original(mode), e)
         
         print('Done')
         #data.flush_cache()
         print_memory_usage()
-        
-        # - events
-        joined_df = s.merge(weather, how='left')
 
         # create the time windows for each event
         print('Creating time windows for events...')
-        joined_df = utility.time_windows_event(joined_df, steps_behind=steps_behind_event, steps_after=steps_after_event)
+        joined_df = utility.time_windows_event(se, mode=mode, steps_behind=steps_behind_event, steps_after=steps_after_event)
+
+        # add other dataframes
+        # - events
+        events_info = e.drop(['KEY','KEY_2','DATETIME_UTC','step_duration','START_DATETIME_UTC','END_DATETIME_UTC'],axis=1) \
+                        .groupby(['index']).first()
+        joined_df = joined_df.merge(events_info, how='left', left_on='event_index', right_index=True)
+        # - weather
+        joined_df = joined_df.merge(weather, how='left')
+        # - sensors
+        joined_df = joined_df.merge(sensors, how='left')
 
         print('Aggregating events in samples...')
         joined_df = joined_df.round(4).groupby('sample_id').agg({
@@ -114,7 +118,7 @@ def create_base_dataset(steps_behind_event, steps_after_event=3, validation_spli
 
         # cast to int some columns
         joined_df = joined_df.astype({'EMERGENCY_LANE': 'int', 'LANES': 'int',
-                                        'ROAD_TYPE': 'int', 'EVENT_DETAIL': 'int'})
+                                        'ROAD_TYPE': 'int', 'EVENT_DETAIL': 'float'})
 
         """
         if mode == 'train':

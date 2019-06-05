@@ -14,7 +14,7 @@ import src.preprocessing.create_base_dataset as dataset
 if __name__ == "__main__":
     """ Preprocess the required dataframe and create the dataset. """
     print()
-    speeds.preprocess(data.speeds_original('test'))
+    speeds.create_speeds_test_for_unbiased_features(data.speeds_original('test'))
     
     print()
     events.preprocess()
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     distances.preprocess()
     
     print()
-    dataset.create_base_dataset(steps_behind_event=10, steps_after_event=3)
+    dataset.create_base_dataset(steps_behind_event=4, steps_after_event=3)
