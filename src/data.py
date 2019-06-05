@@ -138,6 +138,14 @@ def speeds(mode='local', t='train'):
         cache['preprocessed'][mode][t]['speeds'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed'][mode][t]['speeds']
+
+
+def speed_test_masked():
+    if cache['preprocessed']['local']['test']['speeds_masked'] is None:
+        filepath = get_path_preprocessed('local', 'test', 'speeds_test_masked.csv.gz')
+        cache['preprocessed']['local']['test']['speeds_masked'] = convert_to_datetime(pd.read_csv(filepath, engine='c', index_col=0))
+
+    return cache['preprocessed']['local']['test']['speeds_masked']
 # ========
 
 # WEATHER
@@ -214,16 +222,8 @@ def dataset(mode='local', t='train', onehot=True, drop_index_columns=True):
 
 
 
+
 """
-def speed_test_masked():
-    global _speed_test_masked
-    if _speed_test_masked is None:
-        _speed_test_masked = convert_to_datetime(pd.read_csv(f'{_BASE_PATH_PREPROCESSED}/speeds_test_masked.csv.gz', engine='c', 
-                                            index_col=0, parse_dates=True))
-    return _speed_test_masked
-
-
-
 def base_structure(mode='train'):
     assert mode in ['train', 'test', 'full']
     import src.preprocessing.create_base_structure as create_base_structure
