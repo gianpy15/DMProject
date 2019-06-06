@@ -58,7 +58,7 @@ class AvgSpeedSensorHour(FeatureBase):
         df['DATETIME_UTC_y_0_m'] = df['DATETIME_UTC_y_0_m'].dt.strftime(
             '%H:%M:%S')
         df = df.merge(feature_df_y_0, left_on=['KEY', 'KM', 'DATETIME_UTC_y_0_m'], right_on=[
-                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'])
+                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], how='left')
         df = df.drop(
             ['DATETIME_UTC_y_0_m', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], axis=1)
 
@@ -71,7 +71,7 @@ class AvgSpeedSensorHour(FeatureBase):
         df['DATETIME_UTC_y_1_m'] = df['DATETIME_UTC_y_1_m'].dt.strftime(
             '%H:%M:%S')
         df = df.merge(feature_df_y_1, left_on=['KEY', 'KM', 'DATETIME_UTC_y_1_m'], right_on=[
-                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'])
+                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], how='left')
         df = df.drop(
             ['DATETIME_UTC_y_1_m', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], axis=1)
 
@@ -84,7 +84,7 @@ class AvgSpeedSensorHour(FeatureBase):
         df['DATETIME_UTC_y_2_m'] = df['DATETIME_UTC_y_2_m'].dt.strftime(
             '%H:%M:%S')
         df = df.merge(feature_df_y_2, left_on=['KEY', 'KM', 'DATETIME_UTC_y_2_m'], right_on=[
-                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'])
+                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], how='left')
         df = df.drop(
             ['DATETIME_UTC_y_2_m', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], axis=1)
 
@@ -97,7 +97,7 @@ class AvgSpeedSensorHour(FeatureBase):
         df['DATETIME_UTC_y_3_m'] = df['DATETIME_UTC_y_3_m'].dt.strftime(
             '%H:%M:%S')
         df = df.merge(feature_df_y_3, left_on=['KEY', 'KM', 'DATETIME_UTC_y_3_m'], right_on=[
-                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'])
+                      'KEY', 'KM', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], how='left')
         df = df.drop(
             ['DATETIME_UTC_y_3_m', 'DATETIME_UTC_SPEED_SENSOR_HOUR'], axis=1)
 
