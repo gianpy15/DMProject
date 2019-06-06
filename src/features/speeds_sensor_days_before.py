@@ -13,11 +13,11 @@ class SpeedsSensorDaysBefore(FeatureBase):
     | KEY | KM | DATETIME_UTC_y_0 | speed_avg_sensor_day_i_before | speed_sd_sensor_day_i_before | speed_min_sensor_day_i_before | speed_max_sensor_day_i_before | n_vehicles_sensor_day_i_before
     """
 
-    def __init__(self, n_days_before=1):
+    def __init__(self, mode, n_days_before=1):
         name = 'SpeedsSensorDaysBefore'
         self.n_days_before = n_days_before
         super(SpeedsSensorDaysBefore, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
         s = None
@@ -55,9 +55,11 @@ class SpeedsSensorDaysBefore(FeatureBase):
         return pd.merge(df, f, how='left')
 
 if __name__ == '__main__':
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
     print('how many days before do you want?')
     days = int(input())
-    c = SpeedsSensorDaysBefore(days)
+    c = SpeedsSensorDaysBefore(mode, days)
 
     print('Creating {}'.format(c.name))
     c.save_feature()

@@ -130,12 +130,12 @@ def create_speeds_full_test():
 
 
 if __name__ == '__main__':
-    parser = setup_parser()
-    args = parser.parse_args(sys.argv[1:])
-    preprocess(args.size, args.algorithm, args.data)
+    # parser = setup_parser()
+    # args = parser.parse_args(sys.argv[1:])
+    # preprocess(args.size, args.algorithm, args.data)
 
-    # preprocess speeds test
+    # # preprocess speeds test
     create_speeds_test_for_unbiased_features(data.speeds_original('test'))
 
-    # create_speeds_train_full()
-    # create_speeds_full_test()
+    create_speeds_train_full()
+    create_speeds_full_test()

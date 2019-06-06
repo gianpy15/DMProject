@@ -12,10 +12,10 @@ class AvgSpeedStreet(FeatureBase):
     | KEY | avg_speed_street | avg_speed_sd_street | avg_speed_min_street | avg_speed_max_street | avg_n_vehicles_street
     """
 
-    def __init__(self):
+    def __init__(self, mode):
         name = 'avg_speed_street'
         super(AvgSpeedStreet, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
         df = None
@@ -43,7 +43,9 @@ class AvgSpeedStreet(FeatureBase):
         return f
 
 if __name__ == '__main__':
-    c = AvgSpeedStreet()
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
+    c = AvgSpeedStreet(mode)
 
     print('Creating {}'.format(c.name))
     c.save_feature()
