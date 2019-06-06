@@ -19,11 +19,21 @@ class AvgSpeedSensor(FeatureBase):
             name=name)
 
     def extract_feature(self):
-        tr = data.speeds_original('train')
-        te = data.speed_test_masked()
-        df = pd.concat([tr, te])
-        del tr
-        del te
+        df = None
+
+        if self.mode == 'local':
+            tr = data.speeds_original('train')
+            te = data.speed_test_masked()
+            df = pd.concat([tr, te])
+            del tr
+            del te
+        
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full')
+            te = data.speeds_original('test2')
+            df = pd.concat([tr, te])
+            del tr
+            del te
         
         return df[['KEY', 'KM', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY', 'KM']).mean().reset_index()\
             .rename(columns={'SPEED_AVG': 'avg_speed_sensor',\
