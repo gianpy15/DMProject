@@ -36,9 +36,18 @@ if __name__ == "__main__":
     M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
     #X, Y = data.dataset_with_features('train', onehot=False, drop_index_columns=True)
-    X, Y = data.dataset('train', onehot=False)
+    X, Y = data.dataset('local','train', onehot=False)
+    print(X.shape, Y.shape)
 
-    X.fillna(0, inplace=True)
+    # mask_not_all_null = np.any(X[['SPEED_AVG_-4','SPEED_AVG_-3','SPEED_AVG_-2','SPEED_AVG_-1']].notnull(),axis=1)
+    # X = X[mask_not_all_null]
+    # Y = Y[mask_not_all_null]
+
+    # print('\nAfter cleaning nan')
+    # print(X.shape, Y.shape)
+    
+    weather_cols = ['WEATHER_-4','WEATHER_-3','WEATHER_-2','WEATHER_-1']
+    X[weather_cols] = X[weather_cols].fillna('Unknown')
 
     weather_cols = [col for col in X.columns if col.startswith('WEATHER_')]
     categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL','EVENT_TYPE'] + weather_cols
