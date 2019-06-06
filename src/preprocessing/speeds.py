@@ -17,20 +17,23 @@ def setup_parser():
     _parser = argparse.ArgumentParser(description='Train the selected model')
     _parser.add_argument('-s', '--size', type=int, action='store', default=3)
     _parser.add_argument('-a', '--algorithm', type=str, action='store', choices=['time'], default='time')
-    _parser.add_argument('-d', '--data', type=str, action='store', choices=['train', 'test', 'all'], default='train')
+    _parser.add_argument('-d', '--data', type=str, action='store', choices=['train', 'test', 'all', '2019'], default='train')
     return _parser
 
 
 def preprocess(infer_size: int = 3, algorithm: str = 'time', data: str = 'train'):
     print('Preprocessing speeds...')
     speeds_df = {}
-    dsets = ['train', 'test'] if data == 'all' else [data]
+    dsets = ['train', 'test', '2019'] if data == 'all' else [data]
     print('Reading datasets')
     if data in ['all', 'train']:
         speeds_df['train'] = pd.read_csv(resources_path('dataset', 'originals', 'speeds_train.csv.gz'))
 
     if data in ['all', 'test']:
         speeds_df['test'] = pd.read_csv(resources_path('dataset', 'originals', 'speeds_test.csv.gz'))
+        
+    if data in ['all', '2019']:
+        speeds_df['2019'] = pd.read_csv(resources_path('dataset', 'originals', 'speeds_2019.csv.gz'))
 
     sensors_df = pd.read_csv(resources_path('dataset', 'originals', 'sensors.csv.gz'))
     print('Done')
@@ -127,9 +130,9 @@ def create_speeds_full_test():
 
 
 if __name__ == '__main__':
-    # parser = setup_parser()
-    # args = parser.parse_args(sys.argv[1:])
-    # preprocess(args.size, args.algorithm, args.data)
+    parser = setup_parser()
+    args = parser.parse_args(sys.argv[1:])
+    preprocess(args.size, args.algorithm, args.data)
 
     # preprocess speeds test
     create_speeds_test_for_unbiased_features(data.speeds_original('test'))
