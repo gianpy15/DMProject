@@ -13,7 +13,7 @@ make available a new feature
 """
 class FeatureBase(ABC):
 
-    def __init__(self, name, columns_to_onehot=[]):
+    def __init__(self, mode, name, columns_to_onehot=[]):
         """
         columns_to_onehot: [(columns_header, onehot_mode), ...]
             onehot_mode: 'single' or 'multiple'
@@ -25,6 +25,7 @@ class FeatureBase(ABC):
         
         """
         self.cache = pd.DataFrame()
+        self.mode = mode
         self.name = name
         self.columns_to_onehot = columns_to_onehot
 
@@ -48,7 +49,7 @@ class FeatureBase(ABC):
         """
         overwrite_if_exists: if true overwrite without asking; if false do not overwrite, if None ask before overwrite
         """
-        path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
+        path = 'resources/dataset/preprocessed/{}/features/{}/features.csv.gz'.format(self.mode, self.name)
         if os.path.exists(path):
             if overwrite_if_exists == None:
                 choice = yesno_choice('The feature \'{}\' already exists. Want to recreate?'.format(self.name))
@@ -77,7 +78,7 @@ class FeatureBase(ABC):
         if one_hot = True, returns the onehot of the categorical columns, by means of self.columns_to_onehot
         """
         if len(self.cache) == 0:
-            path = 'resources/dataset/preprocessed/features/{}/features.csv.gz'.format(self.name)
+            path = 'resources/dataset/preprocessed/{}/features/{}/features.csv.gz'.format(self.mode, self.name)
             if not os.path.exists(path):
                 choice = yesno_choice('feature \'{}\' does not exist. want to create?'.format(self.name))
                 if choice == 'y':
