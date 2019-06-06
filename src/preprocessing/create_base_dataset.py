@@ -193,6 +193,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
 
         # find the starting time of each event
         ev_agg = e.astype({'KEY':'int'}).groupby('index').agg({
+            'step_duration':'first',
             'EVENT_DETAIL':'first',
             'EVENT_TYPE':'first',
             'KM_END':'first',
@@ -201,7 +202,8 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
             'KEY_2':'first',
             'KM_EVENT':'first',
             'START_DATETIME_UTC':'min',
-        })
+        }).rename(columns={'step_duration':'event_duration'})
+
         ev_agg['timewind_start'] = ev_agg.START_DATETIME_UTC - pd.to_timedelta(15*steps_behind_event, unit='m')
         ev_agg['timewind_end'] = ev_agg.START_DATETIME_UTC + pd.to_timedelta(15*steps_after_event, unit='m')
 
@@ -231,6 +233,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
         joined_df = joined_df.sort_values(['KEY','KM','DATETIME_UTC']) \
             .groupby(['event_index','KEY','KM'], as_index=False).agg({
             'DATETIME_UTC':list,
+            'event_duration':'first',
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
             'SPEED_SD':list,
             'SPEED_MAX':list,
@@ -288,6 +291,12 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
         #print('Dropping not available speeds...')
         #joined_df.dropna(how='all', subset=[f'SPEED_AVG_{i}' for i in range(-steps_behind_event, 0)], inplace=True)
         #print('Dataset shape reduced to:', joined_df.shape)
+
+        # set to NaN some of the target speeds if the events is shorter than 4 time steps
+        joined_df.loc[joined_df['event_duration'] == 3, 'SPEED_AVG_Y_3'] = np.nan
+        joined_df.loc[joined_df['event_duration'] == 2, ['SPEED_AVG_Y_2','SPEED_AVG_Y_3']] = np.nan
+        joined_df.loc[joined_df['event_duration'] == 1, ['SPEED_AVG_Y_1','SPEED_AVG_Y_2','SPEED_AVG_Y_3']] = np.nan
+        joined_df.drop('event_duration', axis=1, inplace=True)
 
         # cast to int some columns
         joined_df = joined_df.astype({'EMERGENCY_LANE': 'int', 'LANES': 'int',
