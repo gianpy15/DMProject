@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 
 if __name__ == '__main__':
-    for t in ['train', 'test']:
+    for t in ['train', 'test', '2019']:
         print('Reading datasets...')
         X_df = data.base_dataset(mode=t)
         speeds = data.speeds(mode=t)

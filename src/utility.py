@@ -30,16 +30,18 @@ def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None):
     unix_timestamps = df[col_name].astype('int64') // 10**9 #s
     remainders = unix_timestamps % step
 
+    mask_rem_non0 = remainders > 0
     if ceil:
-        times_serie = pd.to_datetime(unix_timestamps - remainders + step, unit='s')
+        unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders + step
     else:
-        times_serie = pd.to_datetime(unix_timestamps - remainders, unit='s')
-
+        unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders
+    
     if isinstance(rename_col, str):
-        df[rename_col] = times_serie
+        df[rename_col] = pd.to_datetime(unix_timestamps, unit='s')
     else:
-        df[col_name] = times_serie
+        df[col_name] = pd.to_datetime(unix_timestamps, unit='s')
     return df
+
 
 
 def reduce_mem_usage(df):
