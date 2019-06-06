@@ -18,7 +18,7 @@ def df_to_datetime(df, columns):
         df[c] = pd.to_datetime(df[c])
     return df
 
-def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None):
+def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None, ceil_if_rem0=False):
     """
     Discretize a datetime column of a dataframe.
     df (dataframe):     dataframe
@@ -32,9 +32,15 @@ def discretize_timestamp(df, col_name, step=15*60, ceil=True, rename_col=None):
 
     mask_rem_non0 = remainders > 0
     if ceil:
-        unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders + step
+        if ceil_if_rem0:
+            unix_timestamps = unix_timestamps - remainders + step
+        else:
+            unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders + step
     else:
-        unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders
+        if ceil_if_rem0:
+            unix_timestamps = unix_timestamps - remainders
+        else:
+            unix_timestamps[mask_rem_non0] = unix_timestamps[mask_rem_non0] - remainders
     
     if isinstance(rename_col, str):
         df[rename_col] = pd.to_datetime(unix_timestamps, unit='s')
@@ -83,7 +89,7 @@ def reduce_mem_usage(df):
     return df
 
 
-def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC'):
+def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC', ceil_if_rem0=False):
     """ Expand the timestamp of a dataframe, in order to have all the intermediate timestamps
         between col_ts_start and col_ts_end.
     """
@@ -94,8 +100,8 @@ def expand_timestamps(df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DAT
     df = df.sort_values(col_ts_start).reset_index()
 
     # discretize the timestamps
-    df = discretize_timestamp(df, col_name=col_ts_start, ceil=True)
-    df = discretize_timestamp(df, col_name=col_ts_end, ceil=True)
+    df = discretize_timestamp(df, col_name=col_ts_start, ceil=True, ceil_if_rem0=ceil_if_rem0)
+    df = discretize_timestamp(df, col_name=col_ts_end, ceil=True, ceil_if_rem0=ceil_if_rem0)
 
     # cast the datatimes to unix timestamps (s)
     df[col_ts_start] = df[col_ts_start].astype('int') // 10**9   #s
