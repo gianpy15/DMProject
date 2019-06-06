@@ -20,11 +20,21 @@ class SpeedsSensorDaysBefore(FeatureBase):
             name=name)
 
     def extract_feature(self):
-        tr = data.speeds_original('train').drop(['KEY_2'], axis=1)
-        te = data.speed_test_masked().drop(['KEY_2'], axis=1)
-        s = pd.concat([tr, te])
-        del te
-        del tr
+        s = None
+        if self.mode == 'local':
+            tr = data.speeds_original('train').drop(['KEY_2'], axis=1)
+            te = data.speed_test_masked().drop(['KEY_2'], axis=1)
+            s = pd.concat([tr, te])
+            del tr
+            del te
+
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full').drop(['KEY_2'], axis=1)
+            te = data.speeds_original('test2').drop(['KEY_2'], axis=1)
+            s = pd.concat([tr, te])
+            del tr
+            del te
+
         f = s[['KEY', 'DATETIME_UTC', 'KM']].copy()
         s = s.rename(columns={'DATETIME_UTC': 'DATETIME_UTC_drop'})
         for i in tqdm(range(1, self.n_days_before+1)):

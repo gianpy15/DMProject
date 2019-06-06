@@ -27,16 +27,26 @@ class N_vehicles_perDay(FeatureBase):
         
         df["DATETIME_UTC"]=df.DATETIME_UTC_y_0
         df["day"]=df.DATETIME_UTC.dt.weekday
-        merged = df.merge(feature_df, how='left')
+        merged = df.merge(feature_df)
         merged = merged.drop(["day","DATETIME_UTC"],axis=1)
         return merged
 
     def extract_feature(self):
-        tr = data.speeds_original('train')
-        te = data.speed_test_masked()
-        speeds = pd.concat([tr, te])
-        del tr
-        del te
+        speeds = None
+
+        if self.mode == 'local':
+            tr = data.speeds_original('train')
+            te = data.speed_test_masked()
+            speeds = pd.concat([tr, te])
+            del tr
+            del te
+        
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full')
+            te = data.speeds_original('test2')
+            speeds = pd.concat([tr, te])
+            del tr
+            del te
 
         feature_cols = ["DATETIME_UTC", "KEY", "KM", "N_VEHICLES"]
         speeds = speeds.loc[:, feature_cols]

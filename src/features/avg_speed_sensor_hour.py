@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-
+# OK
 class AvgSpeedSensorHour(FeatureBase):
     """
     say for each street the avg speed
