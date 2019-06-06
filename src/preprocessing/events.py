@@ -24,9 +24,9 @@ def function(events_df, km_influence_before, km_influence_after):
     events_df['KM_END'] += km_influence_after
 
     # remove all events that do not involve a time step
-    # events_df = utility.discretize_timestamp(events_df, col_name='START_DATETIME_UTC', rename_col='next_datetime_step')
-    # events_df = events_df[events_df['END_DATETIME_UTC'] >= events_df['next_datetime_step']]
-    # events_df.drop('next_datetime_step', axis=1, inplace=True)
+    events_df = utility.discretize_timestamp(events_df, col_name='START_DATETIME_UTC', rename_col='next_datetime_step')
+    events_df = events_df[events_df['END_DATETIME_UTC'] >= events_df['next_datetime_step']]
+    events_df.drop('next_datetime_step', axis=1, inplace=True)
 
     # expand the timestamps
     events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC',
