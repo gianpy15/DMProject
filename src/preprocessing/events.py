@@ -23,8 +23,14 @@ def function(events_df, km_influence_before, km_influence_after):
     events_df['KM_START'] -= km_influence_before
     events_df['KM_END'] += km_influence_after
 
+    # remove all events that do not involve a time step
+    # events_df = utility.discretize_timestamp(events_df, col_name='START_DATETIME_UTC', rename_col='next_datetime_step')
+    # events_df = events_df[events_df['END_DATETIME_UTC'] >= events_df['next_datetime_step']]
+    # events_df.drop('next_datetime_step', axis=1, inplace=True)
+
     # expand the timestamps
-    events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC')
+    events_df = utility.expand_timestamps(events_df, col_ts_start='START_DATETIME_UTC', col_ts_end='END_DATETIME_UTC',
+                                            ceil_if_rem0=True)
 
     events_df['START_DATETIME_UTC'] = pd.to_datetime(events_df['START_DATETIME_UTC'], unit='s')
     events_df['END_DATETIME_UTC'] = pd.to_datetime(events_df['END_DATETIME_UTC'], unit='s')
@@ -60,14 +66,17 @@ def preprocess(mode='local', km_influence_before=2, km_influence_after=2):
             events_df.to_csv(path, index=False, compression='gzip')
 
     elif mode == 'full':
-        events_local_train_preprocessed = data.events('local', 'train')
-        events_local_test_preprocessed = data.events('local', 'test')
-        events_full_train_preprocessed = pd.concat([events_local_train_preprocessed, events_local_test_preprocessed]).reset_index(drop=True)
-        del events_local_train_preprocessed
-        del events_local_test_preprocessed
+        events_local_train = data.events_original('train')
+        events_local_test = data.events_original('test')
+        events_full = pd.concat([events_local_train, events_local_test]).reset_index(drop=True)
+        del events_local_train
+        del events_local_test
+
+        events_train_full = function(events_full, km_influence_before, km_influence_after)
 
         path = data.get_path_preprocessed(mode, 'train', 'events.csv.gz')
-        events_full_train_preprocessed.to_csv(path, index=False, compression='gzip')
+        events_train_full.to_csv(path, index=False, compression='gzip')
+        del events_train_full
 
         events_df = data.events_original('test2')
         events_df = function(events_df, km_influence_before, km_influence_after)

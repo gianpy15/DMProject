@@ -116,7 +116,7 @@ def events(mode='local', t='train'):
     check_mode_and_t(mode, t)
     if cache['preprocessed'][mode][t]['events'] is None:
         filepath = get_path_preprocessed(mode, t, 'events.csv.gz')
-        cache['preprocessed'][mode][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c', index_col=0))
+        cache['preprocessed'][mode][t]['events'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed'][mode][t]['events']
 # ========
