@@ -63,7 +63,9 @@ def preprocess(mode='local', km_influence_before=2, km_influence_after=2):
         events_local_train_preprocessed = data.events('local', 'train')
         events_local_test_preprocessed = data.events('local', 'test')
         events_full_train_preprocessed = pd.concat([events_local_train_preprocessed, events_local_test_preprocessed]).reset_index(drop=True)
-        
+        del events_local_train_preprocessed
+        del events_local_test_preprocessed
+
         path = data.get_path_preprocessed(mode, 'train', 'events.csv.gz')
         events_full_train_preprocessed.to_csv(path, index=False, compression='gzip')
 

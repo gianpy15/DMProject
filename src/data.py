@@ -160,7 +160,7 @@ def weather_original(t='train'):
 
 def weather():
     if cache['preprocessed']['weather'] is None:
-        filepath = get_path_preprocessed('', '', 'weather_{t}.csv.gz')
+        filepath = get_path_preprocessed('', '', 'base_structure_df_weather.csv.gz')
         cache['preprocessed']['weather'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
 
     return cache['preprocessed']['weather']
