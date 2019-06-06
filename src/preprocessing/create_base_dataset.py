@@ -34,8 +34,8 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
         e = data.events(mode, t)
         if mode == 'local':
             s = data.speeds_original(t)
-        else:
-            raise NotImplementedError()
+        elif mode == 'full':
+            s = data.speeds(mode=mode, t=t)
         se = utility.merge_speed_events(s, e)
         
         print('Done')
@@ -43,7 +43,7 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
 
         # create the time windows for each event
         print('Creating time windows for events...')
-        joined_df = utility.time_windows_event(se, t=t, steps_behind=steps_behind_event, steps_after=steps_after_event)
+        joined_df = utility.time_windows_event(se, speeds_df=s, steps_behind=steps_behind_event, steps_after=steps_after_event)
 
         # add other dataframes
         # - events
@@ -115,9 +115,9 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
 
         # drop the rows for which all speeds are NaNs
         print('Dataset shape:', joined_df.shape)
-        print('Dropping not available speeds...')
-        joined_df.dropna(how='all', subset=[f'SPEED_AVG_{i}' for i in range(-steps_behind_event, 0)], inplace=True)
-        print('Dataset shape reduced to:', joined_df.shape)
+        #print('Dropping not available speeds...')
+        #joined_df.dropna(how='all', subset=[f'SPEED_AVG_{i}' for i in range(-steps_behind_event, 0)], inplace=True)
+        #print('Dataset shape reduced to:', joined_df.shape)
 
         # cast to int some columns
         joined_df = joined_df.astype({'EMERGENCY_LANE': 'int', 'LANES': 'int',
