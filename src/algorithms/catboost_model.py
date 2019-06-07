@@ -73,7 +73,7 @@ class CatBoost(ChainableModel):
             params = {
                 'X': X,
                 'mode': 'local',
-                'n_estimators':100000,
+                'n_estimators': 10000,
                 'loss_function': 'MAE',
                 'eval_metric': 'MAE',
                 
@@ -89,10 +89,14 @@ class CatBoost(ChainableModel):
             X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
             MAE = inout.evaluate(model, X_test, y_test)
 
+            iterations = []
+            for i in range(4):
+                iterations.append(model.estimators_[i].model.best_iteration_)
+
             global _best_MAE
             if MAE<_best_MAE:
                 _best_MAE = MAE
-                Melissa.send_message(f'CATBOOST\n MAE: {MAE}\nparams:{val_params}\n')
+                Melissa.send_message(f'CATBOOST\n ITERATIONS: {iterations} MAE: {MAE}\nparams:{val_params}\n')
             return MAE
 
         return space, get_MAE
