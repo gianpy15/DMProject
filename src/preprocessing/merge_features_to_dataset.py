@@ -11,6 +11,8 @@ from src.features.avg_speed_roadtype_event import AvgSpeedRoadTypeEvent
 from src.features.weather_clusters import Weather_clusters
 from src.features.n_vehicles_perDay import N_vehicles_perDay
 from src.features.weekday import Weekday
+from src.features.diff_speed_events import DiffSpeedEvents
+from src.features.avg_speed_km_before_after import AvgSpeedKmBeforeAfter
 
 """
     merge objects of class feature_base to the base dataset
@@ -46,6 +48,7 @@ def merge_and_return(features_array, mode, default_one_hot=False):
 
 def merge_and_save(mode, default_one_hot=False):
     features_array = [
+        DiffSpeedEvents,
         AvgSpeedStreet,
         AvgSpeedSensor,
         AvgSpeedSensorHour,
@@ -55,7 +58,7 @@ def merge_and_save(mode, default_one_hot=False):
         Weather_clusters,
         N_vehicles_perDay,
         Weekday,
-
+        AvgSpeedKmBeforeAfter,
     ]
     merged_train, merged_test = merge_and_return(features_array, mode, default_one_hot)
 
