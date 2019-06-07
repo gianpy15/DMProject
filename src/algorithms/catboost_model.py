@@ -21,6 +21,8 @@ from sklearn.ensemble import BaggingRegressor
 
 import src.utils.telegram_bot as Melissa
 
+best_MAE = 0.0
+
 class CatBoost(ChainableModel):
 
     def build_model(self, params_dict):
