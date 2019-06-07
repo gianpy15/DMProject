@@ -13,10 +13,10 @@ class AvgSpeedSensor(FeatureBase):
     | KEY | avg_speed_sensor | avg_speed_sd_sensor | avg_speed_min_sensor | avg_speed_max_sensor | avg_n_vehicles_sensor
     """
 
-    def __init__(self):
+    def __init__(self, mode):
         name = 'avg_speed_sensor'
         super(AvgSpeedSensor, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
         df = None
@@ -43,7 +43,9 @@ class AvgSpeedSensor(FeatureBase):
                              'N_VEHICLES': 'avg_n_vehicles_sensor'})
 
 if __name__ == '__main__':
-    c = AvgSpeedSensor()
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
+    c = AvgSpeedSensor(mode)
 
     print('Creating {}'.format(c.name))
     c.save_feature()
