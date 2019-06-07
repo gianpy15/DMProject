@@ -12,17 +12,27 @@ class AvgSpeedStreet(FeatureBase):
     | KEY | avg_speed_street | avg_speed_sd_street | avg_speed_min_street | avg_speed_max_street | avg_n_vehicles_street
     """
 
-    def __init__(self):
+    def __init__(self, mode):
         name = 'avg_speed_street'
         super(AvgSpeedStreet, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
-        tr = data.speeds_original('train')
-        te = data.speed_test_masked()
-        df = pd.concat([tr, te])
-        del tr
-        del te
+        df = None
+
+        if self.mode == 'local':
+            tr = data.speeds_original('train')
+            te = data.speed_test_masked()
+            df = pd.concat([tr, te])
+            del tr
+            del te
+        
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full')
+            te = data.speeds_original('test2')
+            df = pd.concat([tr, te])
+            del tr
+            del te
         
         f = df[['KEY', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY']).mean().reset_index()\
                 .rename(columns={'SPEED_AVG': 'avg_speed_street',\
@@ -33,7 +43,9 @@ class AvgSpeedStreet(FeatureBase):
         return f
 
 if __name__ == '__main__':
-    c = AvgSpeedStreet()
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
+    c = AvgSpeedStreet(mode)
 
     print('Creating {}'.format(c.name))
     c.save_feature()

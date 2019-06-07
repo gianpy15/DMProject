@@ -13,17 +13,27 @@ class AvgSpeedSensor(FeatureBase):
     | KEY | avg_speed_sensor | avg_speed_sd_sensor | avg_speed_min_sensor | avg_speed_max_sensor | avg_n_vehicles_sensor
     """
 
-    def __init__(self):
+    def __init__(self, mode):
         name = 'avg_speed_sensor'
         super(AvgSpeedSensor, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
-        tr = data.speeds_original('train')
-        te = data.speed_test_masked()
-        df = pd.concat([tr, te])
-        del tr
-        del te
+        df = None
+
+        if self.mode == 'local':
+            tr = data.speeds_original('train')
+            te = data.speed_test_masked()
+            df = pd.concat([tr, te])
+            del tr
+            del te
+        
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full')
+            te = data.speeds_original('test2')
+            df = pd.concat([tr, te])
+            del tr
+            del te
         
         return df[['KEY', 'KM', 'SPEED_AVG', 'SPEED_SD', 'SPEED_MIN', 'SPEED_MAX', 'N_VEHICLES']].groupby(['KEY', 'KM']).mean().reset_index()\
             .rename(columns={'SPEED_AVG': 'avg_speed_sensor',\
@@ -33,7 +43,9 @@ class AvgSpeedSensor(FeatureBase):
                              'N_VEHICLES': 'avg_n_vehicles_sensor'})
 
 if __name__ == '__main__':
-    c = AvgSpeedSensor()
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
+    c = AvgSpeedSensor(mode)
 
     print('Creating {}'.format(c.name))
     c.save_feature()

@@ -13,18 +13,28 @@ class SpeedsSensorDaysBefore(FeatureBase):
     | KEY | KM | DATETIME_UTC_y_0 | speed_avg_sensor_day_i_before | speed_sd_sensor_day_i_before | speed_min_sensor_day_i_before | speed_max_sensor_day_i_before | n_vehicles_sensor_day_i_before
     """
 
-    def __init__(self, n_days_before=1):
+    def __init__(self, mode, n_days_before=1):
         name = 'SpeedsSensorDaysBefore'
         self.n_days_before = n_days_before
         super(SpeedsSensorDaysBefore, self).__init__(
-            name=name)
+            name=name, mode=mode)
 
     def extract_feature(self):
-        tr = data.speeds_original('train').drop(['KEY_2'], axis=1)
-        te = data.speed_test_masked().drop(['KEY_2'], axis=1)
-        s = pd.concat([tr, te])
-        del te
-        del tr
+        s = None
+        if self.mode == 'local':
+            tr = data.speeds_original('train').drop(['KEY_2'], axis=1)
+            te = data.speed_test_masked().drop(['KEY_2'], axis=1)
+            s = pd.concat([tr, te])
+            del tr
+            del te
+
+        elif self.mode == 'full':
+            tr = data.speeds(mode='full').drop(['KEY_2'], axis=1)
+            te = data.speeds_original('test2').drop(['KEY_2'], axis=1)
+            s = pd.concat([tr, te])
+            del tr
+            del te
+
         f = s[['KEY', 'DATETIME_UTC', 'KM']].copy()
         s = s.rename(columns={'DATETIME_UTC': 'DATETIME_UTC_drop'})
         for i in tqdm(range(1, self.n_days_before+1)):
@@ -45,9 +55,11 @@ class SpeedsSensorDaysBefore(FeatureBase):
         return pd.merge(df, f, how='left')
 
 if __name__ == '__main__':
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
     print('how many days before do you want?')
     days = int(input())
-    c = SpeedsSensorDaysBefore(days)
+    c = SpeedsSensorDaysBefore(mode, days)
 
     print('Creating {}'.format(c.name))
     c.save_feature()

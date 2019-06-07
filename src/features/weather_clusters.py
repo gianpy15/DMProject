@@ -15,10 +15,10 @@ sys.path.append(os.getcwd())
 
 class Weather_clusters(FeatureBase):
 
-    def __init__(self):
+    def __init__(self, mode):
         name = 'weather_clusters'
         super(Weather_clusters, self).__init__(
-            name=name, columns_to_onehot=[('WEATHER_CL', 'single')])
+            name=name, mode=mode, columns_to_onehot=[('WEATHER_CL', 'single')])
 
     def extract_feature(self):
         bs = data.weather()
@@ -76,7 +76,9 @@ class Weather_clusters(FeatureBase):
         return df
 
 if __name__ == '__main__':
-    c = Weather_clusters()
+    from src.utils.menu import mode_selection
+    mode = mode_selection()
+    c = Weather_clusters(mode)
 
     print('Creating {}'.format(c.name))
     c.save_feature()
