@@ -39,8 +39,8 @@ class CatBoost(ChainableModel):
     @staticmethod
     def get_optimize_params():
         space = [
-            Real(0.1, 1, name='learning_rate'),
-            Integer(2, 8, name='depth'),
+            Real(0.8, 1.0, name='learning_rate'),
+            Integer(2, 5, name='depth'),
             Real(0, 5, name='l2_leaf_reg'),
             #Integer(16, 48, name='max_leaves'),
             Real(0, 2, name='random_strength'),
