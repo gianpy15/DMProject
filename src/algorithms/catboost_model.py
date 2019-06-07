@@ -135,7 +135,7 @@ if __name__ == "__main__":
             'eval_metric': 'MAE',
             'n_estimators':3500,
             'depth':6,
-            'learning_rate':1,
+            'learning_rate':0.1,
             'early_stopping_rounds': 100,
             'cat_features': categorical_cols
         })
