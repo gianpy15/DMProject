@@ -73,6 +73,7 @@ class CatBoost(ChainableModel):
             # build params from default and validation ones
             params = {
                 'X': X,
+                'mode': 'local',
                 'n_estimators':10000,
                 'loss_function': 'MAE',
                 'eval_metric': 'MAE',

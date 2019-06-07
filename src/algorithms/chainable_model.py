@@ -41,6 +41,7 @@ class ChainableModel():
 
         # reset the dictionary including X
         self.params_dict['X'] = X
+        self.params_dict['mode'] = self.mode
         
         self.eval_res = {}
     
