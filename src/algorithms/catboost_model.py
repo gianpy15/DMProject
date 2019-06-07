@@ -21,7 +21,7 @@ from sklearn.ensemble import BaggingRegressor
 
 import src.utils.telegram_bot as Melissa
 
-best_MAE = 0.0
+best_MAE = 100
 
 class CatBoost(ChainableModel):
 
@@ -52,12 +52,10 @@ class CatBoost(ChainableModel):
             keys = ['learning_rate', 'depth', 'l2_leaf_reg', 'random_strength']
             val_params = { keys[i]:arg_list[i] for i in range(len(keys)) }
             #learning_rate, depth, l2_leaf_reg, num_leaves, random_strength = arg_list
-            """
-            Melissa.send_message(f'Starting a train of bayesyan search with following params:\n '
-                              f'learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
-                              f'reg_lambda{reg_lambda}, reg_alpha:{reg_alpha}, min_split_gain:{min_split_gain}'
-                              f'min_child_weight:{min_child_weight}, min_child_samples:{min_child_samples}')
-            """
+
+            Melissa.send_message(f'starting val CATBOOST\n so fermo nmezzo alla strada... ovviamente\n'
+                                 f'{val_params}')
+
             
             X, Y = data.dataset('local','train', onehot=False)
             
@@ -86,7 +84,7 @@ class CatBoost(ChainableModel):
             params.update(val_params)
 
             catboost = CatBoost(params)
-            model = RegressorChain(catboost)
+            model = MultiOutputRegressor(catboost)
             model.fit(X, Y)
 
             X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
@@ -137,7 +135,7 @@ if __name__ == "__main__":
             'eval_metric': 'MAE',
             'n_estimators':3500,
             'depth':6,
-            'learning_rate':1,
+            'learning_rate':0.1,
             'early_stopping_rounds': 100,
             'cat_features': categorical_cols
         })

@@ -17,7 +17,7 @@ import src.utils.telegram_bot as Melissa
 from src.Optimizer import OptimizerWrapper
 import src.utils.exporter as exporter
 
-best_MAE=100
+best_MAE=100000
 
 def to_cat(df):
     weather_cols = [col for col in df.columns if col.startswith('WEATHER_')]
@@ -82,17 +82,17 @@ class lightGBM(ChainableModel):
         def get_MAE(arg_list):
             learning_rate, num_leaves, reg_lambda, reg_alpha, min_split_gain, \
             min_child_weight, min_child_samples = arg_list
-            """
-            Melissa.send_message(f'Starting a train of bayesyan search with following params:\n '
+
+            Melissa.send_message(f'Starting a train LIGHTGBM search with following params:\n '
                               f'learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
                               f'reg_lambda{reg_lambda}, reg_alpha:{reg_alpha}, min_split_gain:{min_split_gain}'
                               f'min_child_weight:{min_child_weight}, min_child_samples:{min_child_samples}')
-            """
+
             params_dict = {
                 'boosting_type': 'gbdt',
                 'num_leaves': num_leaves,
                 'max_depth': -1,
-                'n_estimators': 5000,
+                'n_estimators': 10,
                 'learning_rate': learning_rate,
                 'subsample_for_bin': 200000,
                 'class_weights': None,
@@ -110,12 +110,13 @@ class lightGBM(ChainableModel):
                 'importance_type': 'split',
                 'metric': 'None',
                 'print_every': 100,
+                'mode': 'local',
             }
             X, y = data.dataset(onehot=False)
-            X = reduce_mem_usage(X)
+            X = to_cat(X)
             params_dict['X'] = X
             model = lightGBM(params_dict=params_dict)
-            model_wrapper = MultiOutputRegressor(model, n_jobs=-1)
+            model_wrapper = MultiOutputRegressor(model, n_jobs=1)
             model_wrapper.fit(X, y)
             X_train, X_val,y_train, y_val = train_test_split(X, y, test_size=0.2, shuffle=False)
 
@@ -136,7 +137,7 @@ class lightGBM(ChainableModel):
 
 if __name__ == '__main__':
 
-
+    """
     X, y = data.dataset('local', 'train', onehot=False)
     X = to_cat(X)
 
@@ -175,9 +176,8 @@ if __name__ == '__main__':
     predictions = model_wrapper.predict(X_test)
     sub = exporter.export_sub(sub_base_structure, predictions)
     #exporter.compute_MAE(sub, y_test)
-
-
-    """
+    
+    ###########################################################
     sub2 = exporter.export_sub(sub_base_structure, predictions)
     
     dict_scores = {
@@ -186,10 +186,11 @@ if __name__ == '__main__':
     }
     sub_hybrid = exporter.hybrid_score(dict_scores)
     exporter.compute_MAE(sub_hybrid, y_test)
+    ###########################################################
     """
 
-    #opt = OptimizerWrapper(lightGBM)
-    #opt.optimize_random()
+    opt = OptimizerWrapper(lightGBM)
+    opt.optimize_random()
 
 
 
