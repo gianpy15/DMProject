@@ -207,16 +207,17 @@ def base_dataset(mode='local', t='train'):
 
     return cache['preprocessed'][mode][t]['base_dataset']
 
-def dataset(mode='local', t='train', onehot=True, drop_index_columns=True):
+def dataset(mode='local', t='train', onehot=True, drop_index_columns=True, export=False):
     check_mode_and_t(mode, t)
+    if mode == 'full' and t =='test':
+        export = True
     if cache['preprocessed'][mode][t]['dataset'] is None:
         filepath = get_path_preprocessed(mode, t, 'merged_dataset.csv.gz')
         cache['preprocessed'][mode][t]['dataset'] = convert_to_datetime(pd.read_csv(filepath, engine='c'))
         
         # SORT BY TIMESTAMP (to replicate their split)
         cache['preprocessed'][mode][t]['dataset'].sort_values('DATETIME_UTC_y_0', inplace=True)
-
-    return split_dataset_X_y(cache['preprocessed'][mode][t]['dataset'], onehot, drop_index_columns)
+    return split_dataset_X_y(cache['preprocessed'][mode][t]['dataset'], onehot, drop_index_columns, export)
 # ========
 
 
@@ -271,7 +272,31 @@ def base_structure_hours():
 
 
 
-def split_dataset_X_y(dataset, onehot, drop_index_columns):
+def split_dataset_X_y(dataset, onehot, drop_index_columns, export):
+    def expand_datetime_utc(df):
+        res_df = df.copy()
+        res_df = res_df.reset_index()
+
+        res_df = pd.DataFrame({
+            col: np.repeat(res_df[col].values, res_df.DATETIME_UTC.str.len())
+            for col in res_df.columns.drop('DATETIME_UTC')}
+        ).assign(**{'DATETIME_UTC': np.concatenate(res_df.DATETIME_UTC.values)})[res_df.columns]
+
+        return res_df
+
+    X_sub_structure = None
+    if export:
+        X_sub_structure = dataset[['KEY', 'KM', 'DATETIME_UTC_y_0', 'DATETIME_UTC_y_1', 'DATETIME_UTC_y_2',
+                                   'DATETIME_UTC_y_3', 'SPEED_AVG_-1', 'SPEED_AVG_-2', 'SPEED_AVG_-3', 'SPEED_AVG_-4',
+                                   'EVENT_TYPE', 'event_index']]
+        X_sub_structure['DATETIME_UTC'] = X_sub_structure[['DATETIME_UTC_y_0', 'DATETIME_UTC_y_1', 'DATETIME_UTC_y_2',
+                                                           'DATETIME_UTC_y_3']].values.tolist()
+        X_sub_structure.drop(['DATETIME_UTC_y_0', 'DATETIME_UTC_y_1', 'DATETIME_UTC_y_2', 'DATETIME_UTC_y_3'], axis=1,
+                   inplace=True)
+        X_sub_structure = expand_datetime_utc(X_sub_structure)
+        X_sub_structure['DATETIME_UTC'] = pd.to_datetime(X_sub_structure['DATETIME_UTC'])
+        X_sub_structure['PREDICTION_STEP'] = [0, 1, 2, 3] * (int(len(X_sub_structure) / 4))
+
     # retrieve the target values and move them on Y
     Y_columns = ['SPEED_AVG_Y_0', 'SPEED_AVG_Y_1', 'SPEED_AVG_Y_2', 'SPEED_AVG_Y_3']
     y = dataset[Y_columns]
@@ -285,17 +310,17 @@ def split_dataset_X_y(dataset, onehot, drop_index_columns):
     # find the columns where is present DATETIME and filter them
     X = df.filter(regex='^((?!DATETIME).)*$')
 
+
     if onehot:
         print('performing onehot')
-        columns_to_onehot = []
-        for col in X.columns:
-            print(col)
-            col_type = df[col].dtype
-            if col_type == object:
-                columns_to_onehot.append(col)
-        X = pd.get_dummies(X, columns=columns_to_onehot)
+        weather_cols = [col for col in df.columns if col.startswith('WEATHER_')]
+        categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE'] + weather_cols
+        X = pd.get_dummies(X, columns=categorical_cols)
 
-    return X, y
+    if export:
+        return X, y, X_sub_structure
+    else:
+        return X, y
 
 
 
