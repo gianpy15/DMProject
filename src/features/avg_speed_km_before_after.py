@@ -72,6 +72,9 @@ class AvgSpeedKmBeforeAfter(FeatureBase):
         
         return merged[to_keep]
 
+    def join_to(self, df, one_hot=False):
+        f = convert_to_datetime(self.read_feature())
+        return pd.merge(df, f, how='left')
 
 if __name__ == '__main__':
     from src.utils.menu import mode_selection
