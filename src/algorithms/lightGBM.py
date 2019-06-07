@@ -71,11 +71,11 @@ class lightGBM(ChainableModel):
     def get_optimize_params():
         space = [
             Real(0.01, 0.2, name='learning_rate'),
-            Integer(6, 80, name='num_leaves'),
+            Integer(6, 45, name='num_leaves'),
             Real(0, 100, name='reg_lambda'),
             Real(0, 100, name='reg_alpha'),
-            Real(0, 10, name='min_split_gain'),
-            Real(0, 10, name='min_child_weight'),
+            Real(0.0001, 10, name='min_split_gain'),
+            Real(0.0001, 10, name='min_child_weight'),
             Integer(10, 1000, name='min_child_samples'),
         ]
 
@@ -94,7 +94,7 @@ class lightGBM(ChainableModel):
                 'boosting_type': 'gbdt',
                 'num_leaves': num_leaves,
                 'max_depth': -1,
-                'n_estimators': 1000,
+                'n_estimators': 10000,
                 'learning_rate': learning_rate,
                 'subsample_for_bin': 200000,
                 'class_weights': None,

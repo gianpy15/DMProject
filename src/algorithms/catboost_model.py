@@ -39,7 +39,7 @@ class CatBoost(ChainableModel):
     @staticmethod
     def get_optimize_params():
         space = [
-            Real(0.8, 1.0, name='learning_rate'),
+            Real(0.8, 1, name='learning_rate'),
             Integer(2, 5, name='depth'),
             Real(0, 5, name='l2_leaf_reg'),
             #Integer(16, 48, name='max_leaves'),
@@ -83,7 +83,7 @@ class CatBoost(ChainableModel):
             params.update(val_params)
 
             catboost = CatBoost(params)
-            model = MultiOutputRegressor(catboost)
+            model = MultiOutputRegressor(catboost, n_jobs=-1)
             model.fit(X, Y)
 
             X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=False)
