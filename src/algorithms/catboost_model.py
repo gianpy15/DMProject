@@ -104,6 +104,7 @@ if __name__ == "__main__":
 
     def train_model():
         print()
+        mode = menu.mode_selection()
         chain_mode = input('Choose the chain mode (m: multioutput / c: regressorchain): ').lower()
         M = MultiOutputRegressor if chain_mode == 'm' else RegressorChain
 
@@ -131,6 +132,7 @@ if __name__ == "__main__":
 
         catboost = CatBoost({
             'X': X,
+            'mode': mode,
             'loss_function': 'MAE',
             'eval_metric': 'MAE',
             'n_estimators':3500,
