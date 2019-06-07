@@ -94,7 +94,7 @@ class lightGBM(ChainableModel):
                 'boosting_type': 'gbdt',
                 'num_leaves': num_leaves,
                 'max_depth': -1,
-                'n_estimators': 10000,
+                'n_estimators': 1000,
                 'learning_rate': learning_rate,
                 'subsample_for_bin': 200000,
                 'class_weights': None,
@@ -124,12 +124,16 @@ class lightGBM(ChainableModel):
 
             MAE = evaluate(model_wrapper, X_val, y_val)
 
+            iterations = []
+            for i in range(4):
+                iterations.append(model_wrapper.estimators_[i].model._Booster.best_iteration)
+
             global best_MAE
             if MAE<best_MAE:
                 best_MAE=MAE
                 Melissa.send_message(f'LIGHTGBM\n MAE: {MAE}\n'
                                   f'params:\n'
-                                  f'learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
+                                  f'iterations:{iterations}, learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
                                   f'reg_lambda{reg_lambda}, reg_alpha:{reg_alpha} , min_split_gain:{min_split_gain}'
                                   f'min_child_weight:{min_child_weight}, min_child_samples:{min_child_samples}')
             return MAE
