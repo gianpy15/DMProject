@@ -15,8 +15,18 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error
 import src.utils.telegram_bot as Melissa
 from src.Optimizer import OptimizerWrapper
+import src.utils.exporter as exporter
 
 best_MAE=100
+
+def to_cat(df):
+    weather_cols = [col for col in df.columns if col.startswith('WEATHER_')]
+    categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE',
+                        'WEEK_DAY', 'IS_WEEKEND'] + weather_cols
+    for c in categorical_cols:
+        df[c] = df[c].astype('category')
+    return df
+
 
 def evaluate(model, X_test, y_test):
     mask_test = np.all(y_test.notnull(), axis=1)
@@ -51,42 +61,11 @@ class lightGBM(ChainableModel):
         #plt.show()
 
     def predict(self, X):
-        X = pd.DataFrame(X)
-
-        for c in X.columns:
-            try:
-                X[c]=X[c].astype('float')
-            except ValueError:
-                X[c]=X[c].astype('category')
+        X = pd.DataFrame(X, columns=self.params_dict['X'].columns)\
+            .astype(self.col_dtypes)
+        #X = to_cat(X)
         preds = self.model.predict(X)
         return preds
-
-
-    def validate(self):
-    #TODO: DO NOT DELETE IS USEFULL FOR FINISH THE FIT METHOD IN CASE OF VALIDATION
-
-        def _hera_callback(param):
-            iteration_num = param[2]
-            if iteration_num % param[1]['print_every'] == 0:
-                message = f'PARAMS:\n'
-                for k in param[1]:
-                    message += f'{k}: {param[1][k]}\n'
-                Melissa.send_message(f'ITERATION_NUM: {iteration_num}\n {message}\n MRR: {param[5][0][2]}', account='edo')
-
-        # initialize the model
-        self.model = lgb.LGBMRanker(**self.params_dict)
-
-        self.model.fit(self.x_train, self.y_train, group=self.groups_train, eval_set=[(self.x_vali, self.y_vali)],
-                  eval_group=[self.groups_vali], eval_metric=_mrr, eval_names='validation_set',
-                  early_stopping_rounds=200, verbose=False, callbacks=[eval_callback, _hera_callback])
-        # save the model parameters
-        time = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M")
-        check_folder(f'{self._BASE_PATH}/{time}')
-        with open(f"{self._BASE_PATH}/{time}/Parameters.txt", "w+") as text_file:
-            text_file.write(str(self.params_dict))
-        self.model.booster_.save_model(f'{self._BASE_PATH}/{time}/{self.name}')
-        # return negative mrr
-        return self.eval_res['validation_set']['MRR'][self.model.booster_.best_iteration - 1]
 
     @staticmethod
     def get_optimize_params():
@@ -156,23 +135,18 @@ class lightGBM(ChainableModel):
 
 
 if __name__ == '__main__':
-    """
-    weather_cols = [f'WEATHER_{i}' for i in range(-10, 0)]
-    categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE'] + weather_cols
-    X, y = data.dataset('train', onehot=False)
-    #X.fillna(0, inplace=True)
-    X = reduce_mem_usage(X)
 
-    X_test, y_test =data.dataset('test', onehot=False)
-    #X_test.fillna(0, inplace=True)
-    X_test=reduce_mem_usage(X_test)
-    #y_test=reduce_mem_usage(y_test)
 
+    X, y = data.dataset('local', 'train', onehot=False)
+    X = to_cat(X)
+
+    X_test, y_test, sub_base_structure = data.dataset('full', 'test', onehot=False, export=True)
+    #X_test=to_cat(X_test)
 
     params_dict = {
         'objective': 'regression_l1',
-        'boosting_type':'goss',
-        'num_leaves': 21,
+        'boosting_type':'gbdt',
+        'num_leaves': 25,
         'max_depth': -1,
         'learning_rate': 0.01,
         'n_estimators': 1500,
@@ -191,17 +165,31 @@ if __name__ == '__main__':
         'silent': False,
         'importance_type': 'split',
         'metric': 'None',
-        #'categorical_feature':'name:'+','.join(categorical_cols),
     }
 
     params_dict['X'] = X
     model = lightGBM(params_dict=params_dict)
     model_wrapper = MultiOutputRegressor(model)
     model_wrapper.fit(X, y)
-    #print(evaluate(model_wrapper, X_test, y_test))
+
+    predictions = model_wrapper.predict(X_test)
+    sub = exporter.export_sub(sub_base_structure, predictions)
+    #exporter.compute_MAE(sub, y_test)
+
+
     """
-    opt = OptimizerWrapper(lightGBM)
-    opt.optimize_random()
+    sub2 = exporter.export_sub(sub_base_structure, predictions)
+    
+    dict_scores = {
+        'bs':[sub, sub2],
+        'weights':[0.5, 0.5]
+    }
+    sub_hybrid = exporter.hybrid_score(dict_scores)
+    exporter.compute_MAE(sub_hybrid, y_test)
+    """
+
+    #opt = OptimizerWrapper(lightGBM)
+    #opt.optimize_random()
 
 
 
