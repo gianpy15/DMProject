@@ -10,6 +10,7 @@ from src.features.avg_speed_roadtype import AvgSpeedRoadType
 from src.features.avg_speed_roadtype_event import AvgSpeedRoadTypeEvent
 from src.features.weather_clusters import Weather_clusters
 from src.features.n_vehicles_perDay import N_vehicles_perDay
+from src.features.avg_speed_km_before_after import AvgSpeedKmBeforeAfter
 from src.features.weekday import Weekday
 
 """
@@ -55,6 +56,7 @@ def merge_and_save(mode, default_one_hot=False):
         Weather_clusters,
         N_vehicles_perDay,
         Weekday,
+        AvgSpeedKmBeforeAfter,
 
     ]
     merged_train, merged_test = merge_and_return(features_array, mode, default_one_hot)
