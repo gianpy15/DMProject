@@ -83,16 +83,18 @@ class lightGBM(ChainableModel):
             learning_rate, num_leaves, reg_lambda, reg_alpha, min_split_gain, \
             min_child_weight, min_child_samples = arg_list
 
+            """
             Melissa.send_message(f'Starting a train LIGHTGBM search with following params:\n '
                               f'learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
                               f'reg_lambda{reg_lambda}, reg_alpha:{reg_alpha}, min_split_gain:{min_split_gain}'
                               f'min_child_weight:{min_child_weight}, min_child_samples:{min_child_samples}')
+            """
 
             params_dict = {
                 'boosting_type': 'gbdt',
                 'num_leaves': num_leaves,
                 'max_depth': -1,
-                'n_estimators': 10,
+                'n_estimators': 10000,
                 'learning_rate': learning_rate,
                 'subsample_for_bin': 200000,
                 'class_weights': None,
@@ -125,7 +127,7 @@ class lightGBM(ChainableModel):
             global best_MAE
             if MAE<best_MAE:
                 best_MAE=MAE
-                Melissa.send_message(f'MAE: {MAE}\n'
+                Melissa.send_message(f'LIGHTGBM\n MAE: {MAE}\n'
                                   f'params:\n'
                                   f'learning_rate:{learning_rate}, num_leaves:{num_leaves}, '
                                   f'reg_lambda{reg_lambda}, reg_alpha:{reg_alpha} , min_split_gain:{min_split_gain}'
