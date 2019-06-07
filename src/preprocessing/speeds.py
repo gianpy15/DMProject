@@ -71,6 +71,8 @@ def preprocess(infer_size: int = 3, algorithm: str = 'time', data: str = 'train'
         complete_df = complete_df.set_index([DATETIME])
 
         complete_df = complete_df.interpolate(method=algorithm, limit=infer_size, limit_area='inside')
+        complete_df.fillna(method='ffill', inplace=True)
+        complete_df.fillna(method='bfill', inplace=True)
         print('Done')
         complete_df.dropna(subset=[SPEED_AVG], inplace=True)
         print(f'final DataFrame shape: {complete_df.shape}')
@@ -135,7 +137,7 @@ if __name__ == '__main__':
     preprocess(args.size, args.algorithm, args.data)
 
     # preprocess speeds test
-    create_speeds_test_for_unbiased_features(data.speeds_original('test'))
+    # create_speeds_test_for_unbiased_features(data.speeds_original('test'))
 
-    create_speeds_train_full()
-    create_speeds_full_test()
+    # create_speeds_train_full()
+    # create_speeds_full_test()

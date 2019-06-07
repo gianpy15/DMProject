@@ -46,7 +46,7 @@ def merge_and_save(mode, default_one_hot=False):
     features_array = [
         # AvgSpeedStreet,
         # AvgSpeedSensor,
-        AvgSpeedSensorHour,
+        # AvgSpeedSensorHour,
         # AvgSpeedRoadType,
         # AvgSpeedRoadTypeEvent,
         # SpeedsSensorDaysBefore,
