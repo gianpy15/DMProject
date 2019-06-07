@@ -19,6 +19,7 @@ class ChainableModel():
         # X is needed to be passed as an addtional param in order to 
         # save the dataframe columns and types
         assert 'X' in params_dict, 'X param is compulsory!'
+        assert 'mode' in params_dict, 'mode is compulsory!'
 
         self.params_dict = params_dict
 
@@ -28,14 +29,19 @@ class ChainableModel():
         self.columns = list(X.columns)
         self.col_dtypes = { col:str(X[col].dtype) for col in X.columns }
         
+        self.mode = params_dict.pop('mode')
         self.name = params_dict.pop('name', 0)
-        self.val_split = params_dict.pop('val_split', 0.2)
+        if self.mode != 'full':
+            self.val_split = params_dict.pop('val_split', 0.2)
+        else:
+            self.val_split = 0
         
         # initialize the model using the dictionary without the additional params
         self.model = self.build_model(self.params_dict)
 
         # reset the dictionary including X
         self.params_dict['X'] = X
+        self.params_dict['mode'] = self.mode
         
         self.eval_res = {}
     

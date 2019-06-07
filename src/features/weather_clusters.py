@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
 import numpy as np
 from tqdm import tqdm_notebook as tqdm
 import src.data as data
