@@ -18,6 +18,10 @@ class AvgSpeedKmBeforeAfter(FeatureBase):
         name = 'avg_speed_km_before_after'
         super(AvgSpeedKmBeforeAfter, self).__init__(
             name=name, mode=mode)
+        
+    def join_to(self, df, one_hot=False):
+        f = convert_to_datetime(self.read_feature())
+        return pd.merge(df, f, how='left')
 
     def extract_feature(self):
         print('Reading data...')
@@ -69,7 +73,8 @@ class AvgSpeedKmBeforeAfter(FeatureBase):
         to_keep_3 = ['SPEED_AVG_AFTER_-' + str(k) for k in range(1, 5)]
         to_keep_4 = ['DELTA_BEFORE', 'DELTA_AFTER']
         to_keep = [KEY, KM, *to_keep_1, *to_keep_2, *to_keep_3, *to_keep_4]
-        
+        for i in range(1, 5):
+            merged['DATETIME_UTC_-' + str(i)] = pd.to_datetime(merged['DATETIME_UTC_-' + str(i)])
         return merged[to_keep]
 
     def join_to(self, df, one_hot=False):
