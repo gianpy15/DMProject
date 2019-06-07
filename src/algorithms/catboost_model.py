@@ -51,6 +51,11 @@ if __name__ == "__main__":
 
     weather_cols = [col for col in X.columns if col.startswith('WEATHER_')]
     categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL','EVENT_TYPE'] + weather_cols
+    
+    categorical_cols.extend(['WEEK_DAY','IS_WEEKEND'])
+
+    weather_clusters_cols = ['WEATHER_-4_CL','WEATHER_-3_CL','WEATHER_-2_CL','WEATHER_-1_CL']
+    X[weather_clusters_cols] = X[weather_clusters_cols].fillna('Unknown')
 
     catboost = CatBoost({
         'X': X,
