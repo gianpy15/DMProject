@@ -232,6 +232,8 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
         print('Aggregating events in samples...')
         joined_df = joined_df.sort_values(['KEY','KM','DATETIME_UTC']) \
             .groupby(['event_index','KEY','KM'], as_index=False).agg({
+            'KM_START':'first',
+            'KM_END':'first',
             'DATETIME_UTC':list,
             'event_duration':'first',
             'SPEED_AVG':list, #[list, lambda x: x[0:event_beginning_step].dropna().mean()],
@@ -250,6 +252,10 @@ def create_base_dataset(mode, steps_behind_event, steps_after_event=3, validatio
             'MIN_TEMPERATURE': list,
             'MAX_TEMPERATURE': list
         })
+        # set sensor distance from event start and end
+        joined_df['distance_start'] = joined_df['KM'] - joined_df['KM_START']
+        joined_df['distance_end'] = joined_df['KM'] - joined_df['KM_END']
+        joined_df.drop(['KM_END','KM_START'], axis=1, inplace=True)
         
         # split the last m measures in different columns
         def split_prediction_fields(row, event_beginning_step):
