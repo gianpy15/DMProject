@@ -198,3 +198,5 @@ src/algorithms/__pycache__/
 
 *.pyc
 notebooks/simoProva.ipynb
+
+catboost_info/

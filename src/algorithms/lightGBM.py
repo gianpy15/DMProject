@@ -21,7 +21,8 @@ best_MAE=100
 
 def to_cat(df):
     weather_cols = [col for col in df.columns if col.startswith('WEATHER_')]
-    categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE'] + weather_cols
+    categorical_cols = ['EMERGENCY_LANE', 'ROAD_TYPE', 'EVENT_DETAIL', 'EVENT_TYPE',
+                        'WEEK_DAY', 'IS_WEEKEND'] + weather_cols
     for c in categorical_cols:
         df[c] = df[c].astype('category')
     return df
@@ -139,8 +140,8 @@ if __name__ == '__main__':
     X, y = data.dataset('local', 'train', onehot=False)
     X = to_cat(X)
 
-    X_test, y_test, sub_base_structure = data.dataset('local', 'test', onehot=False, export=True)
-    X_test=to_cat(X_test)
+    X_test, y_test, sub_base_structure = data.dataset('full', 'test', onehot=False, export=True)
+    #X_test=to_cat(X_test)
 
     params_dict = {
         'objective': 'regression_l1',
@@ -173,6 +174,8 @@ if __name__ == '__main__':
 
     predictions = model_wrapper.predict(X_test)
     sub = exporter.export_sub(sub_base_structure, predictions)
+    #exporter.compute_MAE(sub, y_test)
+
 
     """
     sub2 = exporter.export_sub(sub_base_structure, predictions)
@@ -184,10 +187,6 @@ if __name__ == '__main__':
     sub_hybrid = exporter.hybrid_score(dict_scores)
     exporter.compute_MAE(sub_hybrid, y_test)
     """
-    exporter.compute_MAE(sub, y_test)
-
-
-
 
     #opt = OptimizerWrapper(lightGBM)
     #opt.optimize_random()
