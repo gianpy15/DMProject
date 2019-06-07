@@ -319,7 +319,7 @@ class MultiOutputEstimator(six.with_metaclass(ABCMeta, BaseEstimator,
         if not hasattr(self.estimator, "predict"):
             raise ValueError("The base estimator should implement a predict method")
 
-        X = check_array(X, accept_sparse=True, dtype="object")
+        X = check_array(X, accept_sparse=True, force_all_finite=False, dtype="object")
 
         y = Parallel(n_jobs=self.n_jobs)(
             delayed(parallel_helper)(e, 'predict', X)
