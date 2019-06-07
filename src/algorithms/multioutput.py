@@ -521,10 +521,10 @@ class _BaseChain(six.with_metaclass(ABCMeta, BaseEstimator)):
         -------
         self : object
         """
-        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True, dtype="object")
+        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True, force_all_finite=False, dtype="object")
 
         random_state = check_random_state(self.random_state)
-        check_array(X, accept_sparse=True, dtype="object")
+        check_array(X, accept_sparse=True, force_all_finite=False, dtype="object")
         self.order_ = self.order
         if self.order_ is None:
             self.order_ = np.array(range(Y.shape[1]))

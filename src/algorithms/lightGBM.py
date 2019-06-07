@@ -18,21 +18,6 @@ from src.Optimizer import OptimizerWrapper
 
 best_MAE=100
 
-def evaluate(model, X_test, y_test):
-    mask_test = np.all(y_test.notnull(), axis=1)
-    print('number of valid samples:', (mask_test*1).sum())
-
-    y_pred = model.predict(X_test[mask_test])
-
-    """
-    for i in range(4):
-        print(f'MAE columns {i}\n')
-        print(mean_absolute_error(y_test[mask_test].values[:, i], y_pred[:, i]))
-        print('\n')
-    """
-    return mean_absolute_error(y_test[mask_test], y_pred)
-
-
 class lightGBM(ChainableModel):
 
     def build_model(self, params_dict):
