@@ -41,7 +41,7 @@ class CatBoost(ChainableModel):
         space = [
             Real(0.8, 1, name='learning_rate'),
             Integer(2, 5, name='depth'),
-            Real(0, 5, name='l2_leaf_reg'),
+            Real(0, 0.5, name='l2_leaf_reg'),
             #Integer(16, 48, name='max_leaves'),
             Real(0, 2, name='random_strength'),
         ]
