@@ -91,7 +91,7 @@ def create_speeds_test_for_unbiased_features(speeds_test):
     e = data.events(mode='local', t='test')
     joined_df = utility.merge_speed_events(speeds_test, e)
 
-    speeds_target = utility.time_windows_event(joined_df, t='test', steps_behind=0, steps_after=3)
+    speeds_target = utility.time_windows_event(joined_df, speeds_test, steps_behind=0, steps_after=3)
     speeds_target.dropna(subset=['KEY'], inplace=True)
     # build a dataframe containing the target speeds, so that it can be joined
     # to the original speeds and reveal the target speeds rows
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     # preprocess(args.size, args.algorithm, args.data)
 
     # # preprocess speeds test
-    # create_speeds_test_for_unbiased_features(data.speeds_original('test'))
+    create_speeds_test_for_unbiased_features(data.speeds_original('test'))
 
-    # create_speeds_train_full()
+    create_speeds_train_full()
     create_speeds_full_test()

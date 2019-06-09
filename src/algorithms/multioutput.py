@@ -143,7 +143,7 @@ def check_X_y(X, y, accept_sparse=False, accept_large_sparse=True,
     X = check_array(X, accept_sparse=accept_sparse,
                     accept_large_sparse=accept_large_sparse,
                     dtype=dtype, order=order, copy=copy,
-                    force_all_finite=force_all_finite,
+                    force_all_finite=False,
                     ensure_2d=ensure_2d, allow_nd=allow_nd,
                     ensure_min_samples=ensure_min_samples,
                     ensure_min_features=ensure_min_features,
@@ -319,7 +319,7 @@ class MultiOutputEstimator(six.with_metaclass(ABCMeta, BaseEstimator,
         if not hasattr(self.estimator, "predict"):
             raise ValueError("The base estimator should implement a predict method")
 
-        X = check_array(X, accept_sparse=True, dtype="object")
+        X = check_array(X, accept_sparse=True, force_all_finite=False, dtype="object")
 
         y = Parallel(n_jobs=self.n_jobs)(
             delayed(parallel_helper)(e, 'predict', X)
@@ -521,10 +521,10 @@ class _BaseChain(six.with_metaclass(ABCMeta, BaseEstimator)):
         -------
         self : object
         """
-        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True, dtype="object")
+        X, Y = check_X_y(X, Y, multi_output=True, accept_sparse=True, force_all_finite=False, dtype="object")
 
         random_state = check_random_state(self.random_state)
-        check_array(X, accept_sparse=True, dtype="object")
+        check_array(X, accept_sparse=True, force_all_finite=False, dtype="object")
         self.order_ = self.order
         if self.order_ is None:
             self.order_ = np.array(range(Y.shape[1]))
