@@ -2,6 +2,9 @@
 <p align="center">
   <img width="100%" src="https://i.imgur.com/tm9mSuM.png" alt="Politecnico di Milano" />
 </p>
+<p align="center">
+    <img src="https://i.imgur.com/mPb3Qbd.gif" width="200" alt="logo Politecnico di Milano" />
+</p>
 
 ## Overview
 This is the code for the Data Mining project of the course in 2019 at Politecnico di Milano.
@@ -32,8 +35,12 @@ In addition, we have information also about the **weather**, *hourly* measured b
 
 **The goal is to predict the average speeds of each target sensor for the 4 quarters of hour immediately after the beginning of an event involving that sensor.**
 
+<p align="center">
+    <img src="Documenti/Immagini/sample_road_events.png" alt="sample road with events"/>
+</p>
+
 ## Dataset
-You can download the dataset here: [dataset.zip]().
+You can download the dataset here: [dataset.zip](https://mega.nz/#!x6IREALa).
 
 Extract the archive in: `resources/dataset/originals`.
 
@@ -57,5 +64,10 @@ See the [assignment document](assignment.pdf) for additional details.
 ## Evaluation
 The evaluation metric is the [**Mean Absolute Error (MAE)**](https://en.wikipedia.org/wiki/Mean_absolute_error) between the real average speeds and the predicted ones.
 
-## Presentation
-You can check the project results presentation
+## Our solution
+The task is a multi-regression problem, since we have to predict 4 real values. We built an ensemble of two gradient-boosted trees models, **Catboost** and **LightGBM**, each of them is trained in the following way: the prediction of a model is passed to the next model as a new feature. This is called and implemented in sklearn as [multioutput regressor-chain](https://scikit-learn.org/stable/modules/generated/sklearn.multioutput.RegressorChain.html). The models we used can handle missing values, but the sklearn implementation of the regressor-chain does not allow the presence of them in the dataset. So, we had to modify the code of sklearn to allow nan values.
+<p align="center">
+    <img src="Documenti/Immagini/final_model.png" alt="model ensemble"/>
+</p>
+
+Check the [project presentation](Documenti/slides.pptx) for further details on the models and results.
